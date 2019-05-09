@@ -9,11 +9,12 @@ def main():
     dp.load_and_split()
     dp.sets_drop_nans_dont_use()
     dp.test_for_nans()
+    dict = dp.get_vote_dict()
     x_train, y_train, x_test, y_test, feature_names = dp.get_sets_as_xy_dont_use()
 
     models = [MLPClassifier([100, 100]), MLPClassifier([50, 50])]
 
-    sl = modelSelector(x_train, y_train, x_test, y_test, models)
+    sl = modelSelector(x_train, y_train, x_test, y_test, models, dict)
     sl.eval_models()
 
     print("main finished")
