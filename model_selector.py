@@ -24,6 +24,7 @@ class modelSelector():
         self.best_models_for_winner_prediction = []  # (model, model_name) automatically selected models
         self.vote_acc = []
         self.best_model_for_vote_prediction = None  # (model, model_name) automatically selected models
+        self.division_dist = []
         self.best_model_for_division_prediction = None
 
     def fit(self):
@@ -103,3 +104,43 @@ class modelSelector():
         return self.vote_acc
 
     def score_division_prediction(self, graphic=True):
+        if self.division_dist is not None and graphic is False:
+            return self.division_dist
+        if graphic:
+            if not os.path.exists(PATH_DIVISION_PREDICTION_PLOTS):
+                os.mkdir(PATH_DIVISION_PREDICTION_PLOTS)
+
+        self.division_dist = []
+        shortest_dist = np.inf
+        for model, model_name in zip(self.model_list, self.model_names_list):
+            pred_hist = [0]*self.num_of_classes
+            true_hist = [0]*self.num_of_classes
+            predictions = model.predict(self.x_test)
+
+            for pred in predictions:
+                pred_hist[pred] += 1
+            for label in self.y_test.tolist():
+                true_hist[label] += 1
+
+            dist = np.linalg.norm(np.array(pred_hist) - np.array(true_hist))
+            self.division_dist.append(dist)
+
+            if graphic:
+                plt.hist([predictions, self.y_test.tolist()], bins=13, label=['predictions', 'test data'])
+                supttl = 'Votes division predictions - hist dist = ' + str(np.round(dist))
+                plt.suptitle(supttl)
+                plt.ylim((0, 850))
+                ttl = 'model' + model_name
+                plt.title(ttl)
+                plt.legend()
+                fig = plt.gcf()
+                path = PATH_DIVISION_PREDICTION_PLOTS + '\\' + model_name + '_fig.png'
+                fig.savefig(path, bbox_inches='tight')
+                plt.show()
+
+            if dist < shortest_dist:
+                shortest_dist = dist
+                self.best_model_for_division_prediction = (model, model_name)
+                
+        return self.division_dist
+

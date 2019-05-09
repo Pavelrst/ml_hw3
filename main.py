@@ -17,8 +17,9 @@ def main():
     sl = modelSelector(x_train, y_train, x_test, y_test, models, model_names ,dict)
     sl.fit()
     #sl.score_who_win()
-    acc = sl.score_vote_prediction()
-    print(acc)
+    #acc = sl.score_vote_prediction()
+    sl.score_division_prediction()
+    #print(acc)
 
 if __name__ == "__main__":
     main()
