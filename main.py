@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-plt.rcParams.update({'font.size': 5})
 from data_provider import dataProvider
 from sklearn.neural_network import MLPClassifier
 from model_selector import modelSelector
@@ -13,8 +12,9 @@ def main():
     x_train, y_train, x_test, y_test, feature_names = dp.get_sets_as_xy_dont_use()
 
     models = [MLPClassifier([10]), MLPClassifier([20]), MLPClassifier([5, 5]), MLPClassifier([10, 5])]
+    model_names = ['MLP[10]','MLP[20]','MLP[5,5]','MLP[10,5]']
 
-    sl = modelSelector(x_train, y_train, x_test, y_test, models, dict)
+    sl = modelSelector(x_train, y_train, x_test, y_test, models, model_names ,dict)
     sl.fit()
     myl = sl.score_who_win()
 
