@@ -12,12 +12,13 @@ def main():
     dict = dp.get_vote_dict()
     x_train, y_train, x_test, y_test, feature_names = dp.get_sets_as_xy_dont_use()
 
-    models = [MLPClassifier([100, 100]), MLPClassifier([50, 50])]
+    models = [MLPClassifier([10]), MLPClassifier([20]), MLPClassifier([5, 5]), MLPClassifier([10, 5])]
 
     sl = modelSelector(x_train, y_train, x_test, y_test, models, dict)
-    sl.eval_models()
+    sl.fit()
+    myl = sl.score_who_win()
 
-    print("main finished")
+    print(myl)
 
 if __name__ == "__main__":
     main()
