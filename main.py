@@ -10,7 +10,6 @@ def main():
     dp.test_for_nans()
     dict = dp.get_vote_dict()
     x_train, y_train, x_test, y_test, feature_names = dp.get_sets_as_xy_dont_use()
-
     models = [MLPClassifier([10]), MLPClassifier([20]), MLPClassifier([5, 5]), MLPClassifier([10, 5])]
     model_names = ['MLP[10]', 'MLP[20]', 'MLP[5,5]', 'MLP[10,5]']
 

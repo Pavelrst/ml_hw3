@@ -1,0 +1,128 @@
+\documentclass[12pt]{article}
+
+% Any percent sign marks a comment to the end of the line
+
+% Every latex document starts with a documentclass declaration like this
+% The option dvips allows for graphics, 12pt is the font size, and article
+%   is the style
+
+\usepackage[pdftex]{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\DeclareMathOperator*{\max_bottom}{max}
+\usepackage{url}
+\usepackage{hyperref}
+
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Sharelatex Example},
+    bookmarks=true,
+    pdfpagemode=FullScreen,
+}
+
+
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
+% These are additional packages for "pdflatex", graphics, and to include
+% hyperlinks inside a document.
+
+\setlength{\oddsidemargin}{0.5cm}
+\setlength{\evensidemargin}{0.5cm}
+\setlength{\topmargin}{-1.6cm}
+\setlength{\leftmargin}{0.5cm}
+\setlength{\rightmargin}{0.5cm}
+\setlength{\textheight}{24.00cm} 
+\setlength{\textwidth}{15.00cm}
+\parindent 0pt
+\parskip 5pt
+\pagestyle{plain}
+
+% These force using more of the margins that is the default style
+\newcommand{\namelistlabel}[1]{\mbox{#1}\hfil}
+\newenvironment{namelist}[1]{%1
+\begin{list}{}
+    {
+        \let\makelabel\namelistlabel
+        \settowidth{\labelwidth}{#1}
+        \setlength{\leftmargin}{1.1\labelwidth}
+    }
+  }{%1
+\end{list}}
+
+
+\begin{document}
+\title{\Large Introduction to machine learning - Homework 3}
+
+\author{
+  \textbf{Uri Kirstein}\\
+  777777777 \\ aaaaa@campus.technion.ac.il
+  \\ \\
+  \textbf{Pavel Rastopchin}\\
+  321082026 \\ pavelr@campus.technion.ac.il
+  \\ \\ 
+}
+
+\maketitle
+
+
+\begin{abstract}
+Abstract...
+\end{abstract}
+
+\newpage
+\section{Process and significant decisions}
+In this paragraph we will describe the process of our work.
+\subsection{Automatic model selection}
+As a part of non-mandatory assignment, we will implement the automatic model selection as an integral part of the mandatory assignment. For such task, we encapsulated all model evaluation scripts in one class called $modelSelector()$ (in short - Selector). As we have 3 prediction tasks, the Selector will train all candidate models on training set, and test all of them on the validation set. The difference between the tasks is that different performance metrics will be used. At the end of validation, each model will get a score for it's performance for each prediction task.
+
+\subsection{Different models for different tasks}
+As it stated in the assignment document -  "one size doesn't fit all", i.e. different models can be the best models for each task. To handle this, we decided to include in our $modelSelector()$ class an option to select best model for each task. At the time of writing this paragraph we still don't know if the same model will be selected for all tasks or not.
+
+\newpage
+\section{Candidate models}
+\subsection{Multi-layer perceptron}
+\subsection{K nearest neighbours}
+\subsection{Support vector machine}
+
+\newpage
+\section{Performance measurements}
+\subsection{Majority votes measurement}
+For the task of prediction which party will win the majority of votes we propose to use the most simple measurement that comes to mind - "binary score": if the majority of predicted tags are from the same class as in validation set, the model score is 1, i.e. it has predicted correctly the winning party. Otherwise, the score will be 0, as the classifier predicted the wrong party. Those are the the only two possible values for this score, thus all models which got score 1 will be selected as best predictors for this task by the automated process in Selector class, while other models will be dropped.
+
+\subsection{Votes division measurement}
+For the task of prediction of votes division, we could use the "accuracy" or "error" measurement for the model performance, but we decided that those metrics are too strict for this task. In votes division task all we want is to predict correctly the division of the total votes (in test set) between the parties, but not a vote of each person. In other words, we want to compare a histogram of predicted votes to the histogram of true votes in the test set, thus the metrics we use is an Euclidean distance between two histograms:
+\begin{gather*}
+D = \sqrt[2]{\sum_{i=0}^{12} (histPredicted_i - histTrue_i)^2}   
+\end{gather*}
+According to this measurement, predicted votes distribution histogram which is very different form the true histogram, will be "far away" (in terms of Euclidean distance) from the true votes distribution histogram. On the other hand, predicted votes distribution histogram which is very similar to the true histogram, will be very close to it. Thus, the model with the shortest Euclidean will be considered as the best model for votes division prediction task.  
+
+\subsection{Vote per voter measurement}
+For the task of prediction of votes for each voter, we decided to use Average Accuracy. Based on 
+\href{https://medium.com/usf-msds/choosing-the-right-metric-for-evaluating-machine-learning-models-part-2-86d5649a5428}{Choosing the Right Metric for Evaluating Machine Learning Models}, average accuracy is one of the most commonly used metrics for multi-class classification tasks.
+ 
+
+\newpage
+\section{Selected model}
+\subsection{Majority votes}
+\subsection{Votes division}
+\subsection{Vote per voter}
+
+\newpage
+\section{Final answers}
+\subsection{Which party will win}
+\subsection{Votes division}
+\subsection{Most probable voters}
+\subsection{Confusion matrix}
+
+
+\begin{enumerate}
+	\item one
+	\item two
+\end{enumerate}
+
+\end{document}

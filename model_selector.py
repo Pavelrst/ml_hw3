@@ -34,6 +34,7 @@ class modelSelector():
 
     def score_who_win(self, graphic = True):
         '''
+        === This is first mandatory prediction ===
         This function provides a score against validation (test) data
         for each model, about it's prediction who will win the
         elections.
@@ -76,34 +77,12 @@ class modelSelector():
 
         return self.winner_acc
 
-    def score_vote_prediction(self, graphic = True):
-        '''
-        This function provides a score against validation (test) data
-        for each model, about it's vote prediction.
-        Notice that the tags ratio should be equal in all sets!
-        best models will be saved in
-        :return: scores of performance of each model
-        '''
-        if self.vote_acc is not None and graphic is False:
-            return self.vote_acc
-        if graphic:
-            if not os.path.exists(PATH_VOTE_PREDICTION_PLOTS):
-                os.mkdir(PATH_VOTE_PREDICTION_PLOTS)
-
-        self.vote_acc = []
-        best_acc = 0
-        for model, model_name in zip(self.model_list, self.model_names_list):
-            predictions = model.predict(self.x_test)
-            acc = accuracy_score(self.y_test, predictions)
-            self.vote_acc.append(acc)
-            print("model ", model_name, "reached ", str(np.round(acc*100,3)) , "% accuracy.")
-            if acc > best_acc:
-                best_acc = acc
-                self.best_model_for_vote_prediction = (model, model_name)
-        print("best model for vote classification is ", self.best_model_for_vote_prediction[1])
-        return self.vote_acc
-
     def score_division_prediction(self, graphic=True):
+        '''
+        === This is second mandatory prediction ===
+        :param graphic:
+        :return:
+        '''
         if self.division_dist is not None and graphic is False:
             return self.division_dist
         if graphic:
@@ -141,6 +120,34 @@ class modelSelector():
             if dist < shortest_dist:
                 shortest_dist = dist
                 self.best_model_for_division_prediction = (model, model_name)
-                
+
         return self.division_dist
+
+    def score_vote_prediction(self, graphic = True):
+        '''
+        === This is third mandatory prediction ===
+        This function provides a score against validation (test) data
+        for each model, about it's vote prediction.
+        Notice that the tags ratio should be equal in all sets!
+        best models will be saved in
+        :return: scores of performance of each model
+        '''
+        if self.vote_acc is not None and graphic is False:
+            return self.vote_acc
+        if graphic:
+            if not os.path.exists(PATH_VOTE_PREDICTION_PLOTS):
+                os.mkdir(PATH_VOTE_PREDICTION_PLOTS)
+
+        self.vote_acc = []
+        best_acc = 0
+        for model, model_name in zip(self.model_list, self.model_names_list):
+            predictions = model.predict(self.x_test)
+            acc = accuracy_score(self.y_test, predictions)
+            self.vote_acc.append(acc)
+            print("model ", model_name, "reached ", str(np.round(acc*100,3)) , "% accuracy.")
+            if acc > best_acc:
+                best_acc = acc
+                self.best_model_for_vote_prediction = (model, model_name)
+        print("best model for vote classification is ", self.best_model_for_vote_prediction[1])
+        return self.vote_acc
 
