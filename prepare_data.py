@@ -5,7 +5,7 @@ import os
 from filling_nan_utils import *
 from transform_util import *
 import re
-
+pd.options.mode.chained_assignment = None
 
 TARGET_FEATURES = ['Avg_environmental_importance', 'Avg_government_satisfaction',
                    'Avg_education_importance', 'Most_Important_Issue', 'Number_of_valued_Kneset_members',
