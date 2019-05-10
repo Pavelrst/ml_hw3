@@ -1,0 +1,117 @@
+\documentclass[12pt]{article}
+
+% Any percent sign marks a comment to the end of the line
+
+% Every latex document starts with a documentclass declaration like this
+% The option dvips allows for graphics, 12pt is the font size, and article
+%   is the style
+
+\usepackage[pdftex]{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\DeclareMathOperator*{\max_bottom}{max}
+\usepackage{url}
+\usepackage{hyperref}
+
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Sharelatex Example},
+    bookmarks=true,
+    pdfpagemode=FullScreen,
+}
+
+
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
+% These are additional packages for "pdflatex", graphics, and to include
+% hyperlinks inside a document.
+
+\setlength{\oddsidemargin}{0.5cm}
+\setlength{\evensidemargin}{0.5cm}
+\setlength{\topmargin}{-1.6cm}
+\setlength{\leftmargin}{0.5cm}
+\setlength{\rightmargin}{0.5cm}
+\setlength{\textheight}{24.00cm} 
+\setlength{\textwidth}{15.00cm}
+\parindent 0pt
+\parskip 5pt
+\pagestyle{plain}
+
+% These force using more of the margins that is the default style
+\newcommand{\namelistlabel}[1]{\mbox{#1}\hfil}
+\newenvironment{namelist}[1]{%1
+\begin{list}{}
+    {
+        \let\makelabel\namelistlabel
+        \settowidth{\labelwidth}{#1}
+        \setlength{\leftmargin}{1.1\labelwidth}
+    }
+  }{%1
+\end{list}}
+
+
+\begin{document}
+\title{\Large Introduction to machine learning - Homework 3}
+
+\author{
+  \textbf{Uri Kirstein}\\
+  777777777 \\ aaaaa@campus.technion.ac.il
+  \\ \\
+  \textbf{Pavel Rastopchin}\\
+  321082026 \\ pavelr@campus.technion.ac.il
+  \\ \\ 
+}
+
+\maketitle
+
+
+\begin{abstract}
+Abstract...
+\end{abstract}
+
+\newpage
+\section{Process and significant decisions}
+In this paragraph we will describe the process of our work.
+\subsection{Automatic model selection}
+As a part of non-mandatory assignment, we will implement the automatic model selection as an integral part of the mandatory assignment. For such task, we encapsulated all model evaluation scripts in one class called $modelSelector()$ (in short - Selector). As we have 3 prediction tasks, the Selector will train all candidate models on training set, and test all of them on the validation set. The difference between the tasks is that different performance metrics will be used. At the end of validation, each model will get a score for it's performance for each prediction task.
+
+\subsection{Different models for different tasks}
+As it stated in the assignment document -  "one size doesn't fit all", i.e. different models can be the best models for each task. To handle this, we decided to include in our $modelSelector()$ class an option to select best model for each task. At the time of writing this paragraph we still don't know if the same model will be selected for all tasks or not.
+
+\newpage
+\section{Candidate models}
+\subsection{Multi-layer perceptron}
+\subsection{K nearest neighbours}
+\subsection{Support vector machine}
+
+\newpage
+\section{Performance measurements}
+\subsection{Majority votes}
+\subsection{Votes division}
+\subsection{Vote per voter}
+
+\newpage
+\section{Selected model}
+\subsection{Majority votes}
+\subsection{Votes division}
+\subsection{Vote per voter}
+
+\newpage
+\section{Final answers}
+\subsection{Which party will win}
+\subsection{Votes division}
+\subsection{Most probable voters}
+\subsection{Confusion matrix}
+
+
+\begin{enumerate}
+	\item one
+	\item two
+\end{enumerate}
+
+\end{document}
