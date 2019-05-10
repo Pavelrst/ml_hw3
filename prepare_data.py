@@ -69,6 +69,15 @@ def load_and_split(input_path, backup_dir, train=0.7, validation=0.15, test=0.15
     assert val_size / all_data_length == validation
     assert test_size / all_data_length == test
 
+    for tag in all_data['Vote'].unique():
+        total_tag_num = len(all_data[(all_data.Vote == tag)])
+        train_tag_num = len(train_set[(train_set.Vote == tag)])
+        assert abs(total_tag_num * 0.7 - train_tag_num) < 1
+        val_tag_num = len(val_set[(val_set.Vote == tag)])
+        assert abs(total_tag_num * 0.15 - val_tag_num) < 1
+        test_tag_num = len(test_set[(test_set.Vote == tag)])
+        assert abs(total_tag_num * 0.15 - test_tag_num) < 1
+
     train_set.to_csv(os.path.join(backup_dir, 'train_backup.csv'))
     val_set.to_csv(os.path.join(backup_dir, 'val_backup.csv'))
     test_set.to_csv(os.path.join(backup_dir, 'test_backup.csv'))
