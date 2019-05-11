@@ -11,15 +11,15 @@ PATH_VOTE_PREDICTION_PLOTS = 'Vote_prediction_plots'
 PATH_DIVISION_PREDICTION_PLOTS = 'Division_prediction_plots'
 
 class modelSelector():
-    def __init__(self, x_train, y_train, x_test, y_test, models, model_names, class_dict):
+    def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test, models, model_names):
         self.x_train = x_train
         self.y_train = y_train
         self.x_test = x_test
         self.y_test = y_test
         self.model_list = models
         self.model_names_list = model_names
-        self.class_dict = class_dict
-        self.num_of_classes = len(class_dict)
+        #self.class_dict = class_dict
+        self.num_of_classes = 13
         self.winner_acc = []
         self.best_models_for_winner_prediction = []  # (model, model_name) automatically selected models
         self.vote_acc = []
@@ -58,11 +58,11 @@ class modelSelector():
                 supttl = 'Winner party predictions'
                 plt.suptitle(supttl)
                 plt.ylim((0, 850))
-                ttl = 'model' + model_name
+                ttl = 'model: ' + model_name
                 plt.title(ttl)
                 plt.legend()
                 fig = plt.gcf()
-                path = PATH_WINNER_PARTY_PLOTS + '\\' + supttl + '_' + model_name + '_fig.png'
+                path = PATH_WINNER_PARTY_PLOTS + '\\' + model_name + '_fig.png'
                 fig.savefig(path, bbox_inches='tight')
                 plt.show()
 
