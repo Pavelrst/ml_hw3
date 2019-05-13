@@ -89,18 +89,22 @@ As it stated in the assignment document -  "one size doesn't fit all", i.e. diff
 \newpage
 \section{Candidate models}
 In this section we discuss the candidate models which were selected for our experiments. For the task of most probable voters, we need to predict probabilities, but not the exact tag, so we want to use models which can provide this functionality. Based on post in \href{https://www.researchgate.net/post/What_are_the_best_supervised_classifiers_to_classify_the_problem_of_multiclass_classification}{www.researchgate.net} stating that SVM, KNN and Random Forest can successfully handle a problem of multi-class classification, we decided to choose those two models in addition to a MLP, resulting a total of four candidate models.
+
+\subsection{Hyper parameters tuning with k-fold cross validation}
+
+\newpage
 \subsection{Support vector machine}
-Support vector machines are a set of supervised learning methods used for classification, regression and outliers detection. Main advantages of support vector machines are: Effective in high dimensional spaces, Still effective in cases where number of dimensions is greater than the number of samples. Based on a post in  \href{https://www.researchgate.net/post/Is_it_necessary_to_choose_kernels_in_SVM_according_to_application}{www.researchgate.net} the most important parameters for SVM are the kernel and the C parameter. While the kernel determines the shape of separating hyperplane, the C parameter responsible for overfitting capabilities of the model. A larger C makes the model more complex and lowers its bias, hence it have higher chance of overfitting. A low C gives a model with low variance and high bias. As we can't be sure if our dataset is linearly separable, we will use SVM with RBF kernel.
+Support vector machines are a set of supervised learning methods used for classification, regression and outliers detection. Main advantages of support vector machines are: Effective in high dimensional spaces, Still effective in cases where number of dimensions is greater than the number of samples. Based on a post in  \href{https://www.researchgate.net/post/Is_it_necessary_to_choose_kernels_in_SVM_according_to_application}{www.researchgate.net} the most important parameters for SVM are the kernel and the C parameter. While the kernel determines the shape of separating hyperplane, the C parameter responsible for overfitting capabilities of the model. A larger C makes the model more complex and lowers its bias, hence it have higher chance of overfitting. A low C gives a model with low variance and high bias. As we could not achieve convergence with linear kernel, we will use SVM with RBF kernel.
 
 \begin{figure}[h]
 \centering
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.4\textwidth}
   \centering
   \includegraphics[width=.7\linewidth]{report_pics/SVM_RBF}
   \caption{RBF kernel}
   \label{fig:sub1}
 \end{subfigure}%
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.4\textwidth}
   \centering
   \includegraphics[width=.7\linewidth]{report_pics/SVM_linear}
   \caption{Linear kernel}
@@ -110,6 +114,27 @@ Support vector machines are a set of supervised learning methods used for classi
 \label{fig:test}
 \end{figure}
 
+To select the right value for C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and got a plot. Then we repeated the process with smaller range and smaller steps for fine tuning. As we can see from the plots, the bet accuracy achieved with C = 0.8, thus this value with be selected for SVM model.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.6\linewidth]{Cross_valid_plots/SVM_C_hyper_fig_coarse.png}
+  \caption{C coarse tuning}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.6\linewidth]{Cross_valid_plots/SVM_C_hyper_fig_fine.png}
+  \caption{C fine tuning}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{C hyper parameter tuning}
+\label{fig:test}
+\end{figure}
+ 
+\newpage
 \subsection{K nearest neighbours}
 Neighbors-based classification is a type of instance-based learning or non-generalizing learning: it does not attempt to construct a general internal model, but simply stores instances of the training data. Classification is computed from a simple majority vote of the nearest neighbors of each point. Under some circumstances, it is better to weight the neighbours such that nearer neighbours contribute more to the fit i.e. proportional to the inverse of the distance from the query point. As we would like to experiment with both options, we will create two KNN classifiers with two different distance functions and test their performance.
 \begin{figure}[h]
@@ -117,30 +142,63 @@ Neighbors-based classification is a type of instance-based learning or non-gener
 \includegraphics[width=0.3\textwidth]{report_pics/knn}
 \caption{Classification depends on weight function}
 \end{figure}
-   
+To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models, with different weight types, as shown on below. We ended up with k = 85 after which we didn't notice significant accuracy improvement. As we clearly can see from the plot, the KNN with distance weights performed better with all values of k.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{Cross_valid_plots/k_hyper_fig}
+\caption{k hyper parameter tuning}
+\end{figure}
+
+
+\newpage
 \subsection{Random Forest}
 A random forest is a meta estimator that fits a number of decision tree classifiers on various sub-samples of the dataset and uses averaging to improve the predictive accuracy and control over-fitting. According to \href{https://medium.com/all-things-ai/in-depth-parameter-tuning-for-random-forest-d67bb7e920d}{medium.com post} the most important parameters of this classifier are:
 \begin{enumerate}
-	\item Number of trees - Usually the higher the number of trees the better to learn the data. However, adding a lot of trees can slow down the training process. Based on the experiments conducted in the post we decided to go with 50 trees.
-	\item Maximum depth - represents the depth of each tree in the forest. The deeper the tree, the more splits it has and it captures more information about the data. The downside of a deeper tree, that it tends to overfit. Based on the post we chose to use maximum depth of 5.
-	\item Minimum samples split - represents the minimum number of samples required to split an internal node. Large numbers will cause the nodes of the trees not to split at all disabling it's ability to learn. Thus we decide to use 0.1 value for this parameter.
+	\item Number of trees - Usually the higher the number of trees the better to learn the data. However, adding a lot of trees can slow down the training process. Based on the experiments conducted we decided to go with 50 trees as for bigger values we didn't noticed any improvement.
+	\item Maximum depth - represents the depth of each tree in the forest. The deeper the tree, the more splits it has and it captures more information about the data. The downside of a deeper tree, that it tends to overfit. Based on the plots we decided to set the depth to 15.
+	\item Minimum samples split - represents the minimum number of samples required to split an internal node. Large numbers will cause the nodes of the trees not to split at all disabling it's ability to learn. As we can see on the plot, the best accuracy was achieved with the smallest value of 0.01 which means minimum 70 samples for a split.
 \end{enumerate}
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.3\textwidth}
+  \centering
+  \includegraphics[width=1\linewidth]{Cross_valid_plots/n_hyper_forest_fig}
+  \caption{n tuning}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{0.3\textwidth}
+  \centering
+  \includegraphics[width=1\linewidth]{Cross_valid_plots/d_hyper_forest_fig}
+  \caption{depth tuning}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{0.3\textwidth}
+  \centering
+  \includegraphics[width=1\linewidth]{Cross_valid_plots/s_hyper_forest_fig}
+  \caption{split tuning}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{Random forest parameters tuning}
+\label{fig:test}
+\end{figure}
 
 We find other parameters less important (and less intuitive), thus we will use the default values.
 
+\newpage
 \subsection{Multi-layer perceptron}
 Multi-layer Perceptron classifier. This model optimizes the log-loss function using LBFGS or stochastic gradient descent. In this section we discuss the most important parameters of MLP and the values we have chosen. Our decisions mostly based on the post in \href{https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw}{stats.stackexchange.com}.
 \begin{enumerate}
-	\item Number of hidden layers - There is a consensus that the situations in which performance improves with a second (or third, etc.) hidden layer are very few. One hidden layer is sufficient for the large majority of problems. Based on this statement we decided to use only one hidden layer.
+	\item Number of hidden layers - There is a consensus that the situations in which performance improves with a second (or third, etc.) hidden layer are very few. One hidden layer is sufficient for the large majority of problems. Based on this statement we decided to test three options in the cross-validation process: 1, 2 and 3 hidden layers.
 	\item Hidden layer size - There is rule of thumb that helps for supervised learning problems. The upper bound on the number of hidden neurons that will not result in over-fitting is:
 \begin{gather*}
 N_h = \dfrac{N_s}{\alpha * (N_i + N_o)}
 \end{gather*}
 while $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is arbitrary factor between 2 and 10. In our case, for $\alpha = 10$
 \begin{gather*}
-N_h = \dfrac{7000}{10 * (16 + 13)} = 24
+N_h = \dfrac{7000}{2 * (16 + 13)} = 166
 \end{gather*}
-Causing most strict upper bound of 24 neurons in hidden layer. To prevent overfitting we will go with this number.
+Causing upper bound of 166 neurons in hidden layer. Thus, during cross validation we will test numbers in this range.
 	\item Activation function - The default option is ReLU, but we would like to perform the experiment with Leaky ReLU as it has the same functionality but also prevents the "dead perceptron" phenomenon.
 \begin{figure}[h]
 \centering
