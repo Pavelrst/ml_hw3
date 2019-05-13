@@ -25,6 +25,7 @@ class crossValidator():
         self.best_knn = None
         self.best_random_forest = None
         self.best_mlp = None
+        self.num_of_classes = 13
 
     def getBestSVM(self, graphic=False):
         scores = []
@@ -99,6 +100,7 @@ class crossValidator():
             avg_score1 = 0
             avg_score2 = 0
             avg_score3 = 0
+
             forest1 = RandomForestClassifier(n_estimators=n, max_depth=5, min_samples_split=0.1)
             forest2 = RandomForestClassifier(n_estimators=n, max_depth=15, min_samples_split=0.1)
             forest3 = RandomForestClassifier(n_estimators=n, max_depth=35, min_samples_split=0.1)

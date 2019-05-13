@@ -14,16 +14,12 @@ def main():
     x_train, y_train = dp.get_train_xy()
     x_val, y_val = dp.get_val_xy()
     x_test, y_test = dp.get_test_xy()
-    models = [svm.SVC(kernel='rbf', C=1),
-              KNeighborsClassifier(n_neighbors=3, weights='uniform'),
-              KNeighborsClassifier(n_neighbors=3, weights='distance'),
-              RandomForestClassifier(n_estimators=50, max_depth=5, min_samples_split=0.1),
-              MLPClassifier([24], random_state=1)]
+    models = [svm.SVC(kernel='rbf', C=0.8, gamma='auto'),
+              KNeighborsClassifier(n_neighbors=85, weights='distance'),
+              RandomForestClassifier(n_estimators=50, max_depth=15, min_samples_split=0.01)]
     model_names = ['SVM_rbf',
-                   'KNN_uniform',
                    'KNN_distance',
-                   'Random_Forest',
-                   'MLP[24]']
+                   'Random_Forest']
     #
     sl = modelSelector(x_train, y_train, x_val, y_val, x_test, y_test, models, model_names)
     sl.fit()

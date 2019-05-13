@@ -86,11 +86,19 @@ As a part of non-mandatory assignment, we will implement the automatic model sel
 \subsection{Different models for different tasks}
 As it stated in the assignment document -  "one size doesn't fit all", i.e. different models can be the best models for each task. To handle this, we decided to include in our $modelSelector()$ class an option to select best model for each task. At the time of writing this paragraph we still don't know if the same model will be selected for all tasks or not.
 
+
 \newpage
 \section{Candidate models}
 In this section we discuss the candidate models which were selected for our experiments. For the task of most probable voters, we need to predict probabilities, but not the exact tag, so we want to use models which can provide this functionality. Based on post in \href{https://www.researchgate.net/post/What_are_the_best_supervised_classifiers_to_classify_the_problem_of_multiclass_classification}{www.researchgate.net} stating that SVM, KNN and Random Forest can successfully handle a problem of multi-class classification, we decided to choose those two models in addition to a MLP, resulting a total of four candidate models.
 
 \subsection{Hyper parameters tuning with k-fold cross validation}
+In order to select the best model candidates, we need to perform 3-fold cross validation using training set only. The cross validation process for all models implemented in $crossValidator$ class. In all our cross-validation experiments we used the $accuracy$ as model performance measurement. Although its not the same measurement we selected for each task, it's still more strict requirement than all other metric we will describe in next sections.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{report_pics/frog}
+\caption{A sad fact about hyper-parameters tuning}
+\end{figure}
 
 \newpage
 \subsection{Support vector machine}
@@ -194,20 +202,18 @@ Multi-layer Perceptron classifier. This model optimizes the log-loss function us
 \begin{gather*}
 N_h = \dfrac{N_s}{\alpha * (N_i + N_o)}
 \end{gather*}
-while $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is arbitrary factor between 2 and 10. In our case, for $\alpha = 10$
-\begin{gather*}
-N_h = \dfrac{7000}{2 * (16 + 13)} = 166
-\end{gather*}
-Causing upper bound of 166 neurons in hidden layer. Thus, during cross validation we will test numbers in this range.
-	\item Activation function - The default option is ReLU, but we would like to perform the experiment with Leaky ReLU as it has the same functionality but also prevents the "dead perceptron" phenomenon.
+while $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ 
+causing upper bound of 166 neurons in hidden layer. Thus, during cross validation we will test numbers in this range.
+	\item Activation function - The default option is ReLU, but we would like to perform the experiment with tanh function as well.
+\end{enumerate}
+
+We decided to leave other parameters at their default values as the problem of selecting the optimal neural network model is complex by itself and not should be covered in this submission, resulting 6 models trained and tested with different values of hidden layer size. As we can see from the plot, the results are not very promising and vary from iteration to iteration. We decided not to use this model at all because of inconsistency of the results.  
+
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.5\textwidth]{report_pics/relu}
-\caption{ReLU (left) and Leaky ReLU (right)}
+\includegraphics[width=0.5\textwidth]{Cross_valid_plots/mlp_h_fig}
+\caption{MLP cross validation results}
 \end{figure}
-\end{enumerate}
-We decided to leave other parameters at their default values as the problem of selecting the optimal neural network model is complex by itself and not should be covered in this submission. 
-
 
 \newpage
 \section{Performance measurements}
@@ -235,14 +241,8 @@ To visualize the prediction results on validation set we will use histogram of t
 \begin{figure}[htp]
 \centering
 \includegraphics[width=.3\textwidth]{Winner_party_plots/SVM_rbf_fig}\quad
-\includegraphics[width=.3\textwidth]{Winner_party_plots/KNN_uniform_fig}\quad
-\includegraphics[width=.3\textwidth]{Winner_party_plots/KNN_distance_fig}
-
-\medskip
-
-\includegraphics[width=.3\textwidth]{Winner_party_plots/Random_Forest_fig}\quad
-\includegraphics[width=.3\textwidth]{Winner_party_plots/MLP[24]_fig}
-
+\includegraphics[width=.3\textwidth]{Winner_party_plots/KNN_distance_fig}\quad
+\includegraphics[width=.3\textwidth]{Winner_party_plots/Random_Forest_fig}
 \caption{Votes distribution}
 \end{figure}
 
