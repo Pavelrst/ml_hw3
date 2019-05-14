@@ -70,10 +70,10 @@ class dataProvider():
         return self.train_set, self.val_set, self.test_set
 
     def get_train_xy(self):
-        return self.x_train, self.y_train
+        return self.train_set.index.values, self.x_train, self.y_train
 
     def get_val_xy(self):
-        return self.x_val, self.y_val
+        return self.val_set.index.values, self.x_val, self.y_val
 
     def get_test_xy(self):
-        return self.x_test, self.y_test
+        return self.test_set.index.values, self.x_test, self.y_test

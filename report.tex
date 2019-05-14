@@ -218,8 +218,12 @@ We decided to leave other parameters at their default values as the problem of s
 \newpage
 \section{Performance measurements}
 \subsection{Majority votes measurement}
-For the task of prediction which party will win the majority of votes we propose to use the most simple measurement that comes to mind - "binary score": if the majority of predicted tags are from the same class as in validation set, the model score is 1, i.e. it has predicted correctly the winning party. Otherwise, the score will be 0, as the classifier predicted the wrong party. Those are the the only two possible values for this score, thus all models which got score 1 will be selected as best predictors for this task by the automated process in Selector class, while other models will be dropped.
-
+For the task of prediction which party will win the majority of votes we propose to use the most simple measurement that comes to mind - "binary score": if the majority of predicted tags are from the same class as in validation set, the model score is 1, i.e. it has predicted correctly the winning party. Otherwise, the score will be 0, as the classifier predicted the wrong party. Those are the the only two possible values for this score, thus all models which got score 1 will be selected as best predictors for this task, while other models will be dropped. Unfortunately this method can give us multiple models which can predict the winner party, i.e. it doesn't choose the best model for this task, which means the binary measurement we chose is not good enough as it can provide us a relative "goodness" of the models which predicted correctly the winner party. To make the method more selective we decided to use $infinity$ $norm$ of the prediction histogram as secondary measurement. 
+\begin{gather*}
+Inf norm = max | histPredicted |   
+\end{gather*}
+The infinity norm value is simply the height of highest bin in the predictions histogram. Among those models who predicted correctly we want to choose the model which does it with highest certainty, basically we want to choose a model which gives majority tag for all samples, because we know that it our datasets, the percentage of the classes is the same.
+     
 \subsection{Votes division measurement}
 For the task of prediction of votes division, we could use the "accuracy" or "error" measurement for the model performance, but we decided that those metrics are too strict for this task. In votes division task all we want is to predict correctly the division of the total votes (in test set) between the parties, but not a vote of each person. In other words, we want to compare a histogram of predicted votes to the histogram of true votes in the test set, thus the metrics we use is an Euclidean distance between two histograms:
 \begin{gather*}
@@ -229,14 +233,28 @@ According to this measurement, predicted votes distribution histogram which is v
 
 \subsection{Most probable voters measurement}
 For the task of prediction of votes for each voter, we could use Average Accuracy. Based on 
-\href{https://medium.com/usf-msds/choosing-the-right-metric-for-evaluating-machine-learning-models-part-2-86d5649a5428}{Choosing the Right Metric for Evaluating Machine Learning Models}, average accuracy is one of the most commonly used metrics for multi-class classification tasks. On the other hand, in this task we should predict a probability of each voter to vote for each party, but not the exact label. That's why we decided to use other metrics for this task. NOT FINISHED 
- 
+\href{https://medium.com/usf-msds/choosing-the-right-metric-for-evaluating-machine-learning-models-part-2-86d5649a5428}{Choosing the Right Metric for Evaluating Machine Learning Models}, average accuracy is one of the most commonly used metrics for multi-class classification tasks. On the other hand, in this task we should predict a probability of each voter to vote for each party, but not the exact label. That's why we decided to use other metrics for this task.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{report_pics/sets}
+\caption{Intersection of predicted voters and actual voters of a party}
+\end{figure}
+Looking at the figure and denoting $P$-as predicted set, $T$-as true set, we can state the following:
+\begin{enumerate}
+	\item $P \cap T$ - i.e. the set intersection is the actual voters which will be provided with transportation. Generally speaking, big intersection is good, thus it will increase the score.
+	\item $P-T$ - are mispredicted voters, which will not vote for the given party, but will get a free ride. Of course that, big $P-T$ is bad, thus it will decrease the score.
+	\item $T-P$ - are actual voters which will not get a transportation and matbe will not vote at all as a result. big $T-P$ is bad, thus it will decrease the score.
+\end{enumerate} 
+Finally we ended up with following score calculation:
+\begin{gather*}
+FINISH   
+\end{gather*}
 
 \newpage
 \section{Prediction results and chosen model}
 In this section we will discuss the results of each prediction task, the quality of the results according to the measurements and which model was selected for each prediction task.
 \subsection{Majority votes}
-To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels. According to those graphs we want be able to choose the best model for this task.
+To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels.
 
 \begin{figure}[htp]
 \centering
@@ -246,29 +264,33 @@ To visualize the prediction results on validation set we will use histogram of t
 \caption{Votes distribution}
 \end{figure}
 
-Looking at the plots we can say that all five models predicted the winner party correctly. On the other hand, during the experiments we noticed that MLP votes distribution changes each time we train the network from scratch. To make MLP results consistent we forced to add the same random state each time we initialize the network weights, which is, of course, not a real solution to this issue. At this point we definitely can drop MLP from this task. Other four predictors successfully predicted the winner party, while SVM did it with the highest level of certainty, i.e. the majority of the samples where classified according to the real tag majority in the train set. As the class proportions in training, validation and test sets are the same, SVM probably will give the same prediction on the test set.
+Looking at the plots we can say that all 3 models predicted the winner party correctly, while SVM and KNN did it with the highest level of certainty, i.e. the majority of the samples where classified according to the real tag majority in the train set. Infinity norm of the prediction histogram of SVM is slightly higher, thus this model is the best model for winner prediction task.
   
 \subsection{Votes division}
 To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels. According to the metrics we choose for Votes division task, we are interested in model which achieved the smallest Euclidean Distance between the histograms. 
 
-
 \begin{figure}[htp]
 \centering
 \includegraphics[width=.3\textwidth]{Division_prediction_plots/SVM_rbf_fig}\quad
-\includegraphics[width=.3\textwidth]{Division_prediction_plots/KNN_uniform_fig}\quad
-\includegraphics[width=.3\textwidth]{Division_prediction_plots/KNN_distance_fig}
-
-\medskip
-
-\includegraphics[width=.3\textwidth]{Division_prediction_plots/Random_Forest_fig}\quad
-\includegraphics[width=.3\textwidth]{Division_prediction_plots/MLP[24]_fig}
+\includegraphics[width=.3\textwidth]{Division_prediction_plots/KNN_distance_fig}\quad
+\includegraphics[width=.3\textwidth]{Division_prediction_plots/Random_Forest_fig}
 
 \caption{Votes distribution}
 \end{figure}
 
-Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, KNN classifier with weighted distances achieved best performance on validation set with final score of 120, which is the best score among other classifiers. 
+Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, Random Forest classifier achieved best performance on validation set with final score of 104, which is the best score among other classifiers. 
 
 \subsection{Vote per voter}
+NOT FINISHED - 
+
+\begin{verbatim}
+model  SVM_rbf reached  29.133 % accuracy.
+model  KNN_distance reached  25.667 % accuracy.
+model  Random_Forest reached  74.0 % accuracy.
+best model for vote classification is  Random_Forest
+\end{verbatim}
+
+
 
 \newpage
 \section{Final answers}
