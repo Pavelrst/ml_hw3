@@ -243,12 +243,17 @@ Looking at the figure and denoting $P$-as predicted set, $T$-as true set, we can
 \begin{enumerate}
 	\item $P \cap T$ - i.e. the set intersection is the actual voters which will be provided with transportation. Generally speaking, big intersection is good, thus it will increase the score.
 	\item $P-T$ - are mispredicted voters, which will not vote for the given party, but will get a free ride. Of course that, big $P-T$ is bad, thus it will decrease the score.
-	\item $T-P$ - are actual voters which will not get a transportation and matbe will not vote at all as a result. big $T-P$ is bad, thus it will decrease the score.
+	\item $T-P$ - are actual voters which will not get a transportation and maybe will not vote at all as a result. big $T-P$ is bad, thus it will decrease the score.
 \end{enumerate} 
-Finally we ended up with following score calculation:
-\begin{gather*}
-FINISH   
+Finally we ended up with following score calculation:\\
+$P_i \cap T_i$ - actual voters with transportation by party i \\
+   $P_i - T_i$ - mispredicted voters, which will not vote party i \\
+   $T_i -P_i$ - actual voters of party i, which will not get a transportation \\
+\begin{gather*}   
+   Score = \sum_{i=0}^{12} |P_i \cap T_i|-|P_i - T_i|-|T_i -P_i|  
 \end{gather*}
+
+   
 
 \newpage
 \section{Prediction results and chosen model}
@@ -280,24 +285,85 @@ To visualize the prediction results on validation set we will use histogram of t
 
 Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, Random Forest classifier achieved best performance on validation set with final score of 104, which is the best score among other classifiers. 
 
-\subsection{Vote per voter}
-NOT FINISHED - 
+\subsection{Voters transportation}
+To visualize the prediction results on validation set we will use bar chart. Each color represents a set of one type, and the bar height, the size of the set. The grey color is a sets of "forgotten" voters, i.e. the voters who are willing to vote for a given party, but not been provided by a transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar is the voters which will vote and actually get a transportation. Grey and the red bars height effects negativelly on the score, while green bar effects positively.    
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.3\textwidth}
+  \centering
+  \includegraphics[width=1\linewidth]{Vote_prediction_plots/SVM_rbf_fig.png}
+  \caption{SVM}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{0.3\textwidth}
+  \centering
+  \includegraphics[width=1\linewidth]{Vote_prediction_plots/KNN_distance_fig}
+  \caption{KNN}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{0.3\textwidth}
+  \centering
+  \includegraphics[width=1\linewidth]{Vote_prediction_plots/Random_Forest_fig}
+  \caption{Random forest}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{Models performance for transportation task}
+\label{fig:test}
+\end{figure}
 
+As we can see on the plots, first two models has very low negative performance score, which means according to their probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who doesn't want to vote for them. On the other hand, Random forest was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. It's important to mention that the probability threshold we used is $0.4$, i.e. the person added to the party's list only if he will vote to this party with probability higher than $0.4$. \\
+\\
+Interestingly, the accuracy measurement of the model corresponds with the transportation task score, thus the model with highest accuracy got the best transportation score, and the model with lowest accuracy got the worst transportation score.
 \begin{verbatim}
 model  SVM_rbf reached  29.133 % accuracy.
 model  KNN_distance reached  25.667 % accuracy.
 model  Random_Forest reached  74.0 % accuracy.
-best model for vote classification is  Random_Forest
 \end{verbatim}
-
-
 
 \newpage
 \section{Final answers}
+In this section we provide the final answers for the first two prediction tasks and a confusion matrix of the vote prediction of each voter in a test set. 
+
 \subsection{Which party will win}
+As described previously, the best model for this task is SVM with RBF kernel, and its final prediction was:
+\begin{verbatim}
+SVM_rbf  prediction - Purples  party will win the elections.
+\end{verbatim}
+
 \subsection{Votes division}
-\subsection{Most probable voters}
+As described previously, the best model for this task is Random Forest, and its final prediction was:
+\begin{verbatim}
+Random_Forest  prediction - Vote division:
+Party  Blues : 4.9 %
+Party  Browns : 9.6 %
+Party  Greens : 6.0 %
+Party  Greys : 7.1 %
+Party  Khakis : 25.3 %
+Party  Oranges : 3.7 %
+Party  Pinks : 2.1 %
+Party  Purples : 25.4 %
+Party  Reds : 3.7 %
+Party  Turquoises : 3.0 %
+Party  Violets : 1.3 %
+Party  Whites : 4.5 %
+Party  Yellows : 3.4 %
+\end{verbatim}
+
+\newpage
 \subsection{Confusion matrix}
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{confusion_matrix/confusion_fig}
+\caption{Confusion matrix of Random Forest}
+\end{figure}
+
+\newpage
+\section{Feature manipulation}
+
+
+
+
+
 
 \newpage
 \section{Discussion}

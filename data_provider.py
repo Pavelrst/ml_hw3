@@ -18,6 +18,8 @@ class dataProvider():
         self.val_set = pd.read_csv(input_path+delimiter+'validation_transformed.csv')
         self.test_set = pd.read_csv(input_path+delimiter+'test_transformed.csv')
 
+        self.original_train = pd.read_csv(input_path + delimiter + 'train_backup.csv')
+
         # preparing dataset to model:
         self.y_train = self.train_set.pop('Vote').values
         self.y_val = self.val_set.pop('Vote').values
@@ -42,38 +44,31 @@ class dataProvider():
         '''
         :return: dictionary which maps 'Vote' category to numbers.
         '''
-        if self.vote_dictionary is not None:
-            return self.vote_dictionary
+        party_names = self.original_train['Vote'].values
+        party_nums = self.y_train
 
-        if self.vote_categories is not None:
-            categories_list = []
-            for cat in self.vote_categories:
-                if cat not in categories_list:
-                    categories_list.append(cat)
-        else:
-            print("Warning from", inspect.stack()[0][3], ": self.vote_categories are None!")
-            return None
+        num_list = []
+        name_list = []
+        for num, name in zip(party_nums, party_names):
+            if num not in num_list:
+                num_list.append(num)
+                name_list.append(name)
+            else:
+                idx = num_list.index(num)
+                assert name_list[idx] == name
 
-        if self.vote_numbers is not None:
-            numbers_list = []
-            for num in self.vote_numbers:
-                if num not in numbers_list:
-                    numbers_list.append(num)
-        else:
-            print("Warning from", inspect.stack()[0][3], ": self.vote_numbers are None!")
-            return None
 
-        self.vote_dictionary = dict(zip(numbers_list, categories_list))
+        self.vote_dictionary = dict(zip(num_list, name_list))
         return self.vote_dictionary
 
     def get_sets_as_pd(self):
         return self.train_set, self.val_set, self.test_set
 
     def get_train_xy(self):
-        return self.train_set.index.values, self.x_train, self.y_train
+        return self.train_set.index.values, self.x_train[:,1:], self.y_train
 
     def get_val_xy(self):
-        return self.val_set.index.values, self.x_val, self.y_val
+        return self.val_set.index.values, self.x_val[:,1:], self.y_val
 
     def get_test_xy(self):
-        return self.test_set.index.values, self.x_test, self.y_test
+        return self.test_set.index.values, self.x_test[:,1:], self.y_test
