@@ -13,7 +13,7 @@ PATH_WINNER_PARTY_PLOTS = 'Winner_party_plots'
 PATH_VOTE_PREDICTION_PLOTS = 'Vote_prediction_plots'
 PATH_DIVISION_PREDICTION_PLOTS = 'Division_prediction_plots'
 PATH_CONFUSION = 'confusion_matrix'
-THRESHOLD_PROBA = 0.4 #40%
+THRESHOLD_PROBA = 0.5 #50%
 EMPTY_DICT = {
     "12": set(),
     "11": set(),
@@ -66,6 +66,11 @@ class modelSelector():
     def get_best_winner_prediction_model(self):
         return self.best_model_for_winner_prediction
 
+    def score_accuracy(self, graphic=True):
+        for model, model_name in zip(self.model_list, self.model_names_list):
+            acc = model.score(self.x_val, self.y_val)
+            print("Model ", model_name, " reached ", np.round(acc*100,2), "% accuracy.")
+
     def score_who_win(self, graphic=True):
         '''
         === This is first mandatory prediction ===
@@ -92,7 +97,7 @@ class modelSelector():
 
             if graphic:
                 supttl = 'Winner party predictions'
-                ttl = 'model: ' + model_name + "inf norm=" + str(curr_norm)
+                ttl = 'model: ' + model_name + " inf norm=" + str(curr_norm)
                 path = PATH_WINNER_PARTY_PLOTS + '\\' + model_name + '_fig.png'
 
                 plot_hist(path, ttl, predictions, self.y_val.tolist(),
@@ -198,12 +203,18 @@ class modelSelector():
             if graphic:
                 index = np.arange(len(forgotten_voters_list))
                 bar_width = 0.2
+                forgotten_voters_list = [-1*i for i in forgotten_voters_list]
+                false_riders_list = [-1*i for i in false_riders_list]
                 plt.bar(index-bar_width, forgotten_voters_list, bar_width, color='grey', label='T-P: Forgotten voters')
                 plt.bar(index, intersec_list, bar_width, color='green', label='T AND P: True voters with transportation')
                 plt.bar(index+bar_width, false_riders_list, bar_width, color='red', label='P-T: False voters with free ride')
                 supttl = 'Transportation predictions - score = ' + str(score)
+                keys = list(self.party_dict.keys())
+                values = list(self.party_dict.values())
+                plt.xticks(keys, values, rotation='vertical')
                 plt.suptitle(supttl)
-                plt.ylim([0,500])
+                plt.ylim([-150,450])
+                plt.grid()
                 ttl = 'model: ' + model_name
                 plt.title(ttl)
                 plt.legend()
@@ -252,7 +263,7 @@ class modelSelector():
         class_names = []
         for key in range(self.num_of_classes):
             class_names.append(self.party_dict[key])
-        plot_confusion_matrix(self.y_test, predictions, title='Confusion matrix (of Random Forest)',classes=class_names)
+        plot_confusion_matrix(self.y_test, predictions, title='Confusion matrix of '+model_name, classes=class_names)
         fig = plt.gcf()
         plt.show()
         path = PATH_CONFUSION + '\\' + 'confusion_fig.png'
@@ -289,7 +300,7 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     else:
         print('Confusion matrix, without normalization')
 
-    print(cm)
+    #print(cm)
 
     fig, ax = plt.subplots()
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)

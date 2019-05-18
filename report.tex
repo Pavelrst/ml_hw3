@@ -263,90 +263,79 @@ To visualize the prediction results on validation set we will use histogram of t
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=.3\textwidth]{Winner_party_plots/SVM_rbf_fig}\quad
-\includegraphics[width=.3\textwidth]{Winner_party_plots/KNN_distance_fig}\quad
-\includegraphics[width=.3\textwidth]{Winner_party_plots/Random_Forest_fig}
+\includegraphics[width=.4\textwidth]{Winner_party_plots/SVM_rbf_fig}
+\includegraphics[width=.4\textwidth]{Winner_party_plots/KNN_distance_fig}
+\includegraphics[width=.4\textwidth]{Winner_party_plots/Random_Forest_fig}
+\includegraphics[width=.4\textwidth]{Winner_party_plots/MLP[50]_fig}
 \caption{Votes distribution}
 \end{figure}
 
-Looking at the plots we can say that all 3 models predicted the winner party correctly, while SVM and KNN did it with the highest level of certainty, i.e. the majority of the samples where classified according to the real tag majority in the train set. Infinity norm of the prediction histogram of SVM is slightly higher, thus this model is the best model for winner prediction task.
-  
+Looking at the plots we can say that 3 models out of 4, predicted the winner party correctly, while SVM and KNN did it with the highest level of certainty, i.e. the majority of the samples where classified according to the real tag majority in the train set. Infinity norm of the prediction histogram of KNN is slightly higher, thus this model is the best model for winner prediction task.
+
+\newpage
 \subsection{Votes division}
 To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels. According to the metrics we choose for Votes division task, we are interested in model which achieved the smallest Euclidean Distance between the histograms. 
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=.3\textwidth]{Division_prediction_plots/SVM_rbf_fig}\quad
-\includegraphics[width=.3\textwidth]{Division_prediction_plots/KNN_distance_fig}\quad
-\includegraphics[width=.3\textwidth]{Division_prediction_plots/Random_Forest_fig}
-
+\includegraphics[width=.4\textwidth]{Division_prediction_plots/SVM_rbf_fig}\quad
+\includegraphics[width=.4\textwidth]{Division_prediction_plots/KNN_distance_fig}\quad
+\includegraphics[width=.4\textwidth]{Division_prediction_plots/Random_Forest_fig}
+\includegraphics[width=.4\textwidth]{Division_prediction_plots/MLP[50]_fig}
 \caption{Votes distribution}
 \end{figure}
 
-Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, Random Forest classifier achieved best performance on validation set with final score of 104, which is the best score among other classifiers. 
+Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, SVM classifier achieved best performance on validation set with final score of 69, which is the best score among other classifiers. 
 
+\newpage
 \subsection{Voters transportation}
 To visualize the prediction results on validation set we will use bar chart. Each color represents a set of one type, and the bar height, the size of the set. The grey color is a sets of "forgotten" voters, i.e. the voters who are willing to vote for a given party, but not been provided by a transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar is the voters which will vote and actually get a transportation. Grey and the red bars height effects negativelly on the score, while green bar effects positively.    
 \begin{figure}[h]
 \centering
-\begin{subfigure}{0.3\textwidth}
-  \centering
-  \includegraphics[width=1\linewidth]{Vote_prediction_plots/SVM_rbf_fig.png}
-  \caption{SVM}
-  \label{fig:sub1}
-\end{subfigure}%
-\begin{subfigure}{0.3\textwidth}
-  \centering
-  \includegraphics[width=1\linewidth]{Vote_prediction_plots/KNN_distance_fig}
-  \caption{KNN}
-  \label{fig:sub1}
-\end{subfigure}%
-\begin{subfigure}{0.3\textwidth}
-  \centering
-  \includegraphics[width=1\linewidth]{Vote_prediction_plots/Random_Forest_fig}
-  \caption{Random forest}
-  \label{fig:sub2}
-\end{subfigure}
+\includegraphics[width=.4\linewidth]{Vote_prediction_plots/SVM_rbf_fig.png}
+\includegraphics[width=.4\linewidth]{Vote_prediction_plots/KNN_distance_fig}
+\includegraphics[width=.4\linewidth]{Vote_prediction_plots/Random_Forest_fig}
+\includegraphics[width=.4\linewidth]{Vote_prediction_plots/MLP[50]_fig}
 \caption{Models performance for transportation task}
 \label{fig:test}
 \end{figure}
 
-As we can see on the plots, first two models has very low negative performance score, which means according to their probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who doesn't want to vote for them. On the other hand, Random forest was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. It's important to mention that the probability threshold we used is $0.4$, i.e. the person added to the party's list only if he will vote to this party with probability higher than $0.4$. \\
-\\
-Interestingly, the accuracy measurement of the model corresponds with the transportation task score, thus the model with highest accuracy got the best transportation score, and the model with lowest accuracy got the worst transportation score.
-\begin{verbatim}
-model  SVM_rbf reached  29.133 % accuracy.
-model  KNN_distance reached  25.667 % accuracy.
-model  Random_Forest reached  74.0 % accuracy.
-\end{verbatim}
+As we can see on the plots, KNN has very low negative performance score, which means according to it's probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who doesn't want to vote for them. On the other hand, MLP was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. It's important to mention that the probability threshold we used is $0.5$, i.e. the person added to the party's list only if he will vote to this party with probability higher than $0.5$. Our implementation provides the functionality the set the probability threshold, so the best model for this task depends on this parameter and selected automatically. 
+
 
 \newpage
 \section{Final answers}
-In this section we provide the final answers for the first two prediction tasks and a confusion matrix of the vote prediction of each voter in a test set. 
+In this section we provide the final answers for the first two prediction tasks and a confusion matrix of the vote prediction of each voter in a test set. First of all the best models are:
+
+\begin{verbatim}
+best model for winner prediction is  KNN_distance
+best model for transportation is  MLP[50]
+best model for vote division is  SVM_rbf
+\end{verbatim}
 
 \subsection{Which party will win}
 As described previously, the best model for this task is SVM with RBF kernel, and its final prediction was:
 \begin{verbatim}
-SVM_rbf  prediction - Purples  party will win the elections.
+KNN_distance  prediction -  Purples  party will win the elections.
 \end{verbatim}
 
 \subsection{Votes division}
 As described previously, the best model for this task is Random Forest, and its final prediction was:
 \begin{verbatim}
-Random_Forest  prediction - Vote division:
-Party  Blues : 4.9 %
-Party  Browns : 9.6 %
-Party  Greens : 6.0 %
-Party  Greys : 7.1 %
-Party  Khakis : 25.3 %
-Party  Oranges : 3.7 %
-Party  Pinks : 2.1 %
-Party  Purples : 25.4 %
-Party  Reds : 3.7 %
-Party  Turquoises : 3.0 %
-Party  Violets : 1.3 %
-Party  Whites : 4.5 %
-Party  Yellows : 3.4 %
+SVM_rbf  prediction - Vote division:
+Party  Blues : 5.3 %
+Party  Browns : 8.4 %
+Party  Greens : 4.7 %
+Party  Greys : 6.7 %
+Party  Khakis : 21.5 %
+Party  Oranges : 5.8 %
+Party  Pinks : 3.9 %
+Party  Purples : 22.7 %
+Party  Reds : 5.3 %
+Party  Turquoises : 5.3 %
+Party  Violets : 2.8 %
+Party  Whites : 3.7 %
+Party  Yellows : 3.8 %
 \end{verbatim}
 
 \newpage
