@@ -72,3 +72,6 @@ class dataProvider():
 
     def get_test_xy(self):
         return self.test_set.index.values, self.x_test[:,1:], self.y_test
+
+    def get_feature_names(self):
+        return self.test_set.columns[1:]

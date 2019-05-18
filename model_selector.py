@@ -65,7 +65,7 @@ class modelSelector():
     def get_best_winner_prediction_model(self):
         return self.best_model_for_winner_prediction
 
-    def score_who_win(self, graphic = True):
+    def score_who_win(self, graphic=True):
         '''
         === This is first mandatory prediction ===
         This function provides a score against validation (test) data
