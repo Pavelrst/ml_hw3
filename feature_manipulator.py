@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from hist_plotter import plot_hist
 
 PATH_DRAMATIC_FEATURE = 'dramatic_feature'
 
@@ -37,20 +38,11 @@ class featureManipulator():
                 predictions = self.model.predict(alterated_x)
                 winner = max(set(predictions), key=predictions.tolist().count)
                 if winner != self.true_winner:
-                    plt.hist([predictions, true_predictions], bins=np.arange(13)-0.5, label=['manipulated', 'original'])
-                    plt.xlim([-1,13])
-                    plt.legend()
                     title = self.feature_names[col] + ' set to 1 results'
-                    plt.ylabel('number of votes')
-                    plt.xlabel('party number')
-                    plt.title(title)
-                    fig = plt.gcf()
-                    keys = list(self.party_dict.keys())
-                    values = list(self.party_dict.values())
-                    plt.xticks(keys, values, rotation='vertical')
                     path = PATH_DRAMATIC_FEATURE + '\\' + self.feature_names[col] + '_set.png'
-                    fig.savefig(path, bbox_inches='tight')
-                    plt.show()
+                    plot_hist(path, title, predictions, true_predictions,
+                              'manipulated', 'original', self.party_dict)
+
                     winner_name = self.party_dict[winner]
                     print("If ", self.feature_names[col], " will be important to everyone, that will cause ",
                           winner_name,
@@ -75,20 +67,12 @@ class featureManipulator():
                     predictions = self.model.predict(alterated_x)
                     winner = max(set(predictions), key=predictions.tolist().count)
                     if winner != self.true_winner:
-                        plt.hist([predictions, true_predictions], bins=np.arange(13)-0.5, label=['manipulated', 'original'])
-                        plt.xlim([-1, 13])
-                        plt.legend()
-                        keys = list(self.party_dict.keys())
-                        values = list(self.party_dict.values())
-                        plt.xticks(keys, values, rotation='vertical')
                         title = self.feature_names[col] + ' grow by ' + str(np.round(c, 2)) + ' results'
-                        plt.ylabel('number of votes')
-                        plt.xlabel('party number')
-                        plt.title(title)
-                        fig = plt.gcf()
+
                         path = PATH_DRAMATIC_FEATURE + '\\' + self.feature_names[col] + '_increased.png'
-                        fig.savefig(path, bbox_inches='tight')
-                        plt.show()
+
+                        plot_hist(path, title, predictions, true_predictions,
+                                  'manipulated', 'original', self.party_dict)
                         winner_name = self.party_dict[winner]
                         print("If ", self.feature_names[col], " will grow by ", np.round(c, 2), ", that will cause ", winner_name, " to win")
                         break
