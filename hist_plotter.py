@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_hist(path, title, hist1, hist2, lbl1, lbl2, dict, save=True):
+def plot_hist(path, title, hist1, hist2, lbl1, lbl2, dict, save=True, suptitle=None):
     plt.hist([hist1, hist2], bins=np.arange(13) - 0.5, label=[lbl1, lbl2])
     plt.xlim([-1, 13])
     plt.legend()
@@ -11,6 +11,8 @@ def plot_hist(path, title, hist1, hist2, lbl1, lbl2, dict, save=True):
     plt.xticks(keys, values, rotation='vertical')
     plt.ylabel('number of votes')
     plt.xlabel('party number')
+    if suptitle is not None:
+        plt.suptitle(suptitle)
     plt.title(title)
     fig = plt.gcf()
     fig.savefig(path, bbox_inches='tight')

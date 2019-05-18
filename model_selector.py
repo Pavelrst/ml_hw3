@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
+from hist_plotter import plot_hist
 
 PATH_WINNER_PARTY_PLOTS = 'Winner_party_plots'
 PATH_VOTE_PREDICTION_PLOTS = 'Vote_prediction_plots'
@@ -90,17 +91,12 @@ class modelSelector():
             curr_norm = np.linalg.norm(pred_hist, ord=np.inf)
 
             if graphic:
-                plt.hist([predictions, self.y_val.tolist()], bins=13, label=['predictions', 'test data'])
                 supttl = 'Winner party predictions'
-                plt.suptitle(supttl)
-                plt.ylim((0, 850))
                 ttl = 'model: ' + model_name + "inf norm=" + str(curr_norm)
-                plt.title(ttl)
-                plt.legend()
-                fig = plt.gcf()
                 path = PATH_WINNER_PARTY_PLOTS + '\\' + model_name + '_fig.png'
-                fig.savefig(path, bbox_inches='tight')
-                plt.show()
+
+                plot_hist(path, ttl, predictions, self.y_val.tolist(),
+                          'predictions', 'true labels', self.party_dict, suptitle=supttl)
 
             pred_winner = max(set(predictions), key=predictions.tolist().count)
             real_winner = max(set(self.y_test), key=self.y_test.tolist().count)
@@ -140,17 +136,11 @@ class modelSelector():
             self.division_dist.append(dist)
 
             if graphic:
-                plt.hist([predictions, self.y_val.tolist()], bins=13, label=['predictions', 'test data'])
                 supttl = 'Votes division predictions - hist dist = ' + str(np.round(dist))
-                plt.suptitle(supttl)
-                plt.ylim((0, 850))
                 ttl = 'model' + model_name
-                plt.title(ttl)
-                plt.legend()
-                fig = plt.gcf()
                 path = PATH_DIVISION_PREDICTION_PLOTS + '\\' + model_name + '_fig.png'
-                fig.savefig(path, bbox_inches='tight')
-                plt.show()
+                plot_hist(path, ttl, predictions, self.y_val.tolist(),
+                          'predictions', 'true labels', self.party_dict, suptitle=supttl)
 
             if dist < shortest_dist:
                 shortest_dist = dist

@@ -122,7 +122,7 @@ Support vector machines are a set of supervised learning methods used for classi
 \label{fig:test}
 \end{figure}
 
-To select the right value for C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and got a plot. Then we repeated the process with smaller range and smaller steps for fine tuning. As we can see from the plots, the bet accuracy achieved with C = 0.8, thus this value with be selected for SVM model.
+To select the right value for C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and got a plot. Then we repeated the process with smaller range and smaller steps for fine tuning. As we can see from the plots, the best accuracy achieved with C = 20 after which we can't see any improvement, thus this value with be selected for SVM model.
 
 \begin{figure}[h]
 \centering
@@ -150,7 +150,7 @@ Neighbors-based classification is a type of instance-based learning or non-gener
 \includegraphics[width=0.3\textwidth]{report_pics/knn}
 \caption{Classification depends on weight function}
 \end{figure}
-To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models, with different weight types, as shown on below. We ended up with k = 85 after which we didn't notice significant accuracy improvement. As we clearly can see from the plot, the KNN with distance weights performed better with all values of k.
+To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models, with different weight types, as shown on below. We ended up with k = 3 after which the accuracy starts to decease. As we clearly can see from the plot, the KNN with distance weights performed better with all values of k.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{Cross_valid_plots/k_hyper_fig}
@@ -163,7 +163,7 @@ To select the right value for k hyper parameter we used the k-fold cross validat
 A random forest is a meta estimator that fits a number of decision tree classifiers on various sub-samples of the dataset and uses averaging to improve the predictive accuracy and control over-fitting. According to \href{https://medium.com/all-things-ai/in-depth-parameter-tuning-for-random-forest-d67bb7e920d}{medium.com post} the most important parameters of this classifier are:
 \begin{enumerate}
 	\item Number of trees - Usually the higher the number of trees the better to learn the data. However, adding a lot of trees can slow down the training process. Based on the experiments conducted we decided to go with 50 trees as for bigger values we didn't noticed any improvement.
-	\item Maximum depth - represents the depth of each tree in the forest. The deeper the tree, the more splits it has and it captures more information about the data. The downside of a deeper tree, that it tends to overfit. Based on the plots we decided to set the depth to 15.
+	\item Maximum depth - represents the depth of each tree in the forest. The deeper the tree, the more splits it has and it captures more information about the data. The downside of a deeper tree, that it tends to overfit. Based on the plots we decided to set the depth to 8 as bigger values does not increase accuracy.
 	\item Minimum samples split - represents the minimum number of samples required to split an internal node. Large numbers will cause the nodes of the trees not to split at all disabling it's ability to learn. As we can see on the plot, the best accuracy was achieved with the smallest value of 0.01 which means minimum 70 samples for a split.
 \end{enumerate}
 
@@ -204,10 +204,10 @@ N_h = \dfrac{N_s}{\alpha * (N_i + N_o)}
 \end{gather*}
 while $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ 
 causing upper bound of 166 neurons in hidden layer. Thus, during cross validation we will test numbers in this range.
-	\item Activation function - The default option is ReLU, but we would like to perform the experiment with tanh function as well.
+	\item Activation function - we decided to use the default option which is ReLU.
 \end{enumerate}
 
-We decided to leave other parameters at their default values as the problem of selecting the optimal neural network model is complex by itself and not should be covered in this submission, resulting 6 models trained and tested with different values of hidden layer size. As we can see from the plot, the results are not very promising and vary from iteration to iteration. We decided not to use this model at all because of inconsistency of the results.  
+We decided to leave other parameters at their default values as the problem of selecting the optimal neural network model is complex by itself and not should be covered in this submission, resulting 2 models trained and tested with different values of hidden layer size. As we can see from the plot, the number of hidden layers does not improve the model accuracy, while sufficient hidden layer size is 30.  
 
 \begin{figure}[h]
 \centering
