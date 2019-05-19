@@ -348,7 +348,7 @@ Party  Yellows : 3.8 %
 
 \newpage
 \section{Feature manipulation}
-In this section we will describe our implementation of bonus part of feature manipulation which will cause other party to win. To complete this task we've created a class $featureMAnipulator$ which automatically finds features which will cause other party to win.
+In this section we will describe our implementation of bonus part of feature manipulation which will cause other party to win. To complete this task we've created a class $featureManipulator$ which automatically finds features which will cause other party to win. Firstly, we provides the class the best model for winner party prediction. Them, in iterative manner, Feature Manipulator decreases or increases one column of the validation or test data one by one, by a given constant $C$. In each iteration we start with relatively small values of $C$ and increase them gradually, until the model predicts another party as a winner. To visualize it we plot an histogram of original predictions, new predictions on altered data and true labels.   
 
 
 
