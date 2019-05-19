@@ -54,8 +54,7 @@ class featureManipulator():
                     print("If ", self.feature_names[col], " will be important to everyone, that will cause ",
                           winner_name,
                           " to win")
-                else:
-                    print('No change in predicton')
+
 
     def set_one_hot(self, x_data, col):
         assert self.feature_names[col] in self.one_hot_data
@@ -84,10 +83,11 @@ class featureManipulator():
                         plot_3hist(path, title, predictions, true_predictions, self.y_test,
                                    'manipulated', 'original', 'true', self.party_dict, suptitle=suptitle)
 
-                        print("If ", self.feature_names[col], " will grow by ", np.round(c, PRECISION), ", that will cause ", winner_name, " to win")
+                        print("If ", self.feature_names[col], " will grow by ",
+                              np.round(c, PRECISION), ", that will cause ",
+                              winner_name, " to win")
                         break
-                    else:
-                        print('No change in predicton')
+
                 for c in C_DEC_RANGE:
                     alterated_x = self.alterate_column(self.x_test, col, c)
                     predictions = self.model.predict(alterated_x)
@@ -100,10 +100,11 @@ class featureManipulator():
                         plot_3hist(path, title, predictions, true_predictions, self.y_test,
                                    'manipulated', 'original', 'true', self.party_dict, suptitle=suptitle)
 
-                        print("If ", self.feature_names[col], " will decrease by ", np.round(c, PRECISION), ", that will cause ", winner_name, " to win")
+                        print("If ", self.feature_names[col], " will decrease by ",
+                              np.round(c, PRECISION), ", that will cause ",
+                              winner_name, " to win")
                         break
-                    else:
-                        print('No change in predicton')
+
 
     def alterate_column(self, x_data, col, c):
         assert self.feature_names[col] in self.continuous_data

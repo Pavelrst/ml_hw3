@@ -19,6 +19,7 @@ def plot_hist(path, title, hist1, hist2, lbl1, lbl2, dict, save=True, suptitle=N
     plt.show()
 
 def plot_3hist(path, title, hist1, hist2, hist3, lbl1, lbl2, lbl3, dict, save=True, suptitle=None):
+    #print('\includegraphics[width=\\textwidth]{'+path+'}')
     plt.hist([hist1, hist2, hist3], bins=np.arange(14) - 0.5, label=[lbl1, lbl2, lbl3])
     plt.xlim([-1, 13])
     plt.legend()

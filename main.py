@@ -30,8 +30,8 @@ def main():
 
     models = [svm.SVC(kernel='rbf', C=20, gamma='auto', probability=True),
               MLPClassifier([50], activation='relu', max_iter=1000),
-              KNeighborsClassifier(n_neighbors=5, weights='distance'),
-              RandomForestClassifier(n_estimators=50, max_depth=5, min_samples_split=0.01)]
+              KNeighborsClassifier(n_neighbors=3, weights='distance'),
+              RandomForestClassifier(n_estimators=50, max_depth=8, min_samples_split=0.01)]
     model_names = ['SVM_rbf',
                     'MLP[50]',
                     'KNN_distance',
