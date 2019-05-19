@@ -226,12 +226,15 @@ class modelSelector():
         print("best model for transportation is ", self.best_model_for_vote_prediction[1])
 
     def predict_winner(self, x_test):
-        model, model_name = self.best_model_for_winner_prediction
-        predictions = model.predict(x_test)
-        winner = max(set(predictions), key=predictions.tolist().count)
-        winner_name = self.party_dict[winner]
-        print(model_name," prediction - ", winner_name, " party will win the elections.")
-        return winner
+        if self.best_model_for_winner_prediction is not None:
+            model, model_name = self.best_model_for_winner_prediction
+            predictions = model.predict(x_test)
+            winner = max(set(predictions), key=predictions.tolist().count)
+            winner_name = self.party_dict[winner]
+            print(model_name," prediction - ", winner_name, " party will win the elections.")
+            return winner
+        else:
+            print("No best model for this task")
 
     def predict_vote_division(self, x_test):
         model, model_name = self.best_model_for_division_prediction

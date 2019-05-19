@@ -1,14 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from hist_plotter import plot_hist
+from hist_plotter import plot_3hist
 
 PATH_DRAMATIC_FEATURE = 'dramatic_feature'
+PRECISION = 3
+C_GROW_RANGE = np.arange(1, 20, 0.1)
+C_DEC_RANGE = np.arange(1, 0, 0.01)
 
 class featureManipulator():
-    def __init__(self, model, x_test, feature_names, party_dict):
+    def __init__(self, model, x_test, y_test, feature_names, party_dict):
         self.model = model[0]
         self.model_name = model[1]
         self.x_test = x_test
+        self.y_test = y_test
         self.party_dict = party_dict
         self.true_winner = 7
         self.feature_names = feature_names
@@ -38,15 +43,19 @@ class featureManipulator():
                 predictions = self.model.predict(alterated_x)
                 winner = max(set(predictions), key=predictions.tolist().count)
                 if winner != self.true_winner:
-                    title = self.feature_names[col] + ' set to 1 results'
-                    path = PATH_DRAMATIC_FEATURE + '\\' + self.feature_names[col] + '_set.png'
-                    plot_hist(path, title, predictions, true_predictions,
-                              'manipulated', 'original', self.party_dict)
-
+                    suptitle = 'Feature ' + self.feature_names[col] + ' set to 1 results'
                     winner_name = self.party_dict[winner]
+                    title = 'New winner: ' + winner_name
+                    path = PATH_DRAMATIC_FEATURE + '\\' + self.feature_names[col] + '_set.png'
+                    plot_3hist(path, title, predictions, true_predictions, self.y_test,
+                              'manipulated', 'original', 'true', self.party_dict, suptitle=suptitle)
+
+
                     print("If ", self.feature_names[col], " will be important to everyone, that will cause ",
                           winner_name,
                           " to win")
+                else:
+                    print('No change in predicton')
 
     def set_one_hot(self, x_data, col):
         assert self.feature_names[col] in self.one_hot_data
@@ -62,38 +71,39 @@ class featureManipulator():
         true_predictions = self.model.predict(self.x_test)
         for col in range(self.x_test.shape[1]):
             if self.feature_names[col] in self.continuous_data:
-                for c in np.arange(0, 10, 0.1):
+                for c in C_GROW_RANGE:
                     alterated_x = self.alterate_column(self.x_test, col, c)
                     predictions = self.model.predict(alterated_x)
                     winner = max(set(predictions), key=predictions.tolist().count)
                     if winner != self.true_winner:
-                        title = self.feature_names[col] + ' grow by ' + str(np.round(c, 2)) + ' results'
-
+                        suptitle = 'Feature ' + self.feature_names[col] + ' grow by ' + str(np.round(c, PRECISION))
+                        winner_name = self.party_dict[winner]
+                        title = 'New winner: ' + winner_name
                         path = PATH_DRAMATIC_FEATURE + '\\' + self.feature_names[col] + '_increased.png'
 
-                        plot_hist(path, title, predictions, true_predictions,
-                                  'manipulated', 'original', self.party_dict)
-                        winner_name = self.party_dict[winner]
-                        print("If ", self.feature_names[col], " will grow by ", np.round(c, 2), ", that will cause ", winner_name, " to win")
+                        plot_3hist(path, title, predictions, true_predictions, self.y_test,
+                                   'manipulated', 'original', 'true', self.party_dict, suptitle=suptitle)
+
+                        print("If ", self.feature_names[col], " will grow by ", np.round(c, PRECISION), ", that will cause ", winner_name, " to win")
                         break
-                for c in np.arange(0, -10, -0.1):
+                    else:
+                        print('No change in predicton')
+                for c in C_DEC_RANGE:
                     alterated_x = self.alterate_column(self.x_test, col, c)
                     predictions = self.model.predict(alterated_x)
                     winner = max(set(predictions), key=predictions.tolist().count)
                     if winner != self.true_winner:
-                        plt.hist([predictions, true_predictions], bins=13, label=['manipulated', 'original'])
-                        plt.legend()
-                        title = self.feature_names[col] + ' decreased by ' + str(np.round(c, 2)) + ' results'
-                        plt.ylabel('number of votes')
-                        plt.xlabel('party number')
-                        plt.title(title)
-                        fig = plt.gcf()
-                        path = PATH_DRAMATIC_FEATURE + '\\' + self.feature_names[col] + '_decreased.png'
-                        fig.savefig(path, bbox_inches='tight')
-                        plt.show()
+                        suptitle = 'Feature ' + self.feature_names[col] + ' decreased by ' + str(np.round(c, PRECISION))
                         winner_name = self.party_dict[winner]
-                        print("If ", self.feature_names[col], " will decrease by ", np.round(c, 2), ", that will cause ", winner_name, " to win")
+                        title = 'New winner: ' + winner_name
+                        path = PATH_DRAMATIC_FEATURE + '\\' + self.feature_names[col] + '_decreased.png'
+                        plot_3hist(path, title, predictions, true_predictions, self.y_test,
+                                   'manipulated', 'original', 'true', self.party_dict, suptitle=suptitle)
+
+                        print("If ", self.feature_names[col], " will decrease by ", np.round(c, PRECISION), ", that will cause ", winner_name, " to win")
                         break
+                    else:
+                        print('No change in predicton')
 
     def alterate_column(self, x_data, col, c):
         assert self.feature_names[col] in self.continuous_data

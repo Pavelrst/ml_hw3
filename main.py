@@ -30,8 +30,8 @@ def main():
 
     models = [svm.SVC(kernel='rbf', C=20, gamma='auto', probability=True),
               MLPClassifier([50], activation='relu', max_iter=1000),
-              KNeighborsClassifier(n_neighbors=3, weights='distance'),
-              RandomForestClassifier(n_estimators=50, max_depth=8, min_samples_split=0.01)]
+              KNeighborsClassifier(n_neighbors=5, weights='distance'),
+              RandomForestClassifier(n_estimators=50, max_depth=5, min_samples_split=0.01)]
     model_names = ['SVM_rbf',
                     'MLP[50]',
                     'KNN_distance',
@@ -44,19 +44,19 @@ def main():
     sl.fit()
     sl.score_accuracy()
     sl.score_who_win(graphic=False)
-    sl.score_transportation_prediction(graphic=False)
-    sl.score_division_prediction(graphic=False)
+    # sl.score_transportation_prediction(graphic=False)
+    # sl.score_division_prediction(graphic=False)
 
     sl.predict_winner(x_test)
-    sl.predict_vote_division(x_test)
-    sl.predict_transportation(x_test)
-    sl.draw_conf_matrix()
+    # sl.predict_vote_division(x_test)
+    # sl.predict_transportation(x_test)
+    # sl.draw_conf_matrix()
     #
-    # model = sl.get_best_winner_prediction_model()
-    # feature_names = dp.get_feature_names()
-    # fml = featureManipulator(model, x_test, feature_names, party_dict=dict)
-    # fml.find_continuous_dramatic_feature()
-    # fml.find_binary_dramatic_feature()
+    model = sl.get_best_winner_prediction_model()
+    feature_names = dp.get_feature_names()
+    fml = featureManipulator(model, x_test, y_test, feature_names, party_dict=dict)
+    fml.find_continuous_dramatic_feature()
+    fml.find_binary_dramatic_feature()
 
 if __name__ == "__main__":
     main()
