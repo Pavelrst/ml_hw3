@@ -350,10 +350,63 @@ Party  Yellows : 3.8 %
 \section{Feature manipulation}
 In this section we will describe our implementation of bonus part of feature manipulation which will cause other party to win. To complete this task we've created a class $featureManipulator$ which automatically finds features which will cause other party to win. Firstly, we provides the class the best model for winner party prediction. Them, in iterative manner, Feature Manipulator decreases or increases one column of the validation or test data one by one, by a given constant $C$. In each iteration we start with relatively small values of $C$ and increase them gradually, until the model predicts another party as a winner. To visualize it we plot an histogram of original predictions, new predictions on altered data and true labels.   
 
+\begin{figure}[ht]
+		\centering
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_environmental_importance_increased}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_government_satisfaction_increased}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_education_importance_increased}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Number_of_valued_Kneset_members_increased}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_Residancy_Altitude_increased}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Weighted_education_rank_increased}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Financial_set}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Healthcare_set}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Social_set}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Other_set}
+		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Military_set}
+\end{figure}
 
+\newpage
+To summarize the results:
 
+\begin{enumerate}
 
+\item For Khakis, as the second most popular party, there are a lot of options to win the elections. Based on our approach we got following results. We will sort them from the smallest to the biggest value of manipulation.
+\begin{verbatim}
+Khakis:
+If  Avg_environmental_importance  will grow by  1.2, Khakis win
+If  Avg_education_importance  will grow by  1.2, Khakis win
+If  Number_of_valued_Kneset_members  will grow by  1.3, Khakis win
+If  Avg_Residancy_Altitude  will grow by  1.7, Khakis win
+If  Weighted_education_rank  will grow by  8.2, Khakis win
+If  Is_Most_Important_Issue_Financial will be important to everyone, Khakis win
+\end{verbatim}
 
+\item Browns will win if they make the voters care solely for Healthcare, and looks like this is the only option for them to win.  
+\begin{verbatim}
+Browns:
+If  Is_Most_Important_Issue_Healthcare will be important to everyone, Browns win
+\end{verbatim}
+
+\item Greys can win in two scenarios, if they make the voters care solely about Social issues or solely other issues. 
+\begin{verbatim}
+Greys:
+If  Is_Most_Important_Issue_Social will be important to everyone, Greys win
+If  Is_Most_Important_Issue_Other will be important to everyone, Greys  win
+\end{verbatim}
+
+\item Reds can win if they scare the people with foreign invasion, which will make everybody care solely about Military issues. 
+\begin{verbatim}
+Reds:
+If  Is_Most_Important_Issue_Military will be important to everyone, Reds win
+\end{verbatim}
+
+\item Turquoises can win if they rise the Average government satisfaction at least by 5.3.
+\begin{verbatim}
+Turquoises:
+If  Avg_government_satisfaction  will grow by  5.3, Turquoises
+\end{verbatim}
+
+\end{enumerate}
 
 \newpage
 \section{Discussion}
