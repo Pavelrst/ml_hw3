@@ -18,6 +18,10 @@ def main():
     id_val, x_val, y_val = dp.get_val_xy()
     id_test, x_test, y_test = dp.get_test_xy()
 
+    assert set(id_train).intersection(set(id_val)) == set()
+    assert set(id_val).intersection(set(id_test)) == set()
+    assert set(id_test).intersection(set(id_train)) == set()
+
     # Cross validation
     # cv = crossValidator(train_x=x_train, train_y=y_train, num_of_folds=3)
     # cv.tuneSVM([10**-5,10**-4,10**-3,10**-2,10**-1,10**0,10**1,10**2,10**3,10**4,10**5], type='coarse')
@@ -43,20 +47,23 @@ def main():
                        models, model_names, dict)
     sl.fit()
     sl.score_accuracy()
-    sl.score_who_win(graphic=False)
-    # sl.score_transportation_prediction(graphic=False)
-    # sl.score_division_prediction(graphic=False)
+    # sl.save_votes_to_csv()
+    # sl.score_who_win(graphic=True)
+    # sl.score_transportation_prediction(graphic=True)
+    # sl.score_division_prediction(graphic=True)
+    sl.score_one_for_all()
 
-    sl.predict_winner(x_test)
+    # sl.predict_winner(x_test)
     # sl.predict_vote_division(x_test)
     # sl.predict_transportation(x_test)
+    #
     # sl.draw_conf_matrix()
     #
-    model = sl.get_best_winner_prediction_model()
-    feature_names = dp.get_feature_names()
-    fml = featureManipulator(model, x_test, y_test, feature_names, party_dict=dict)
-    fml.find_continuous_dramatic_feature()
-    fml.find_binary_dramatic_feature()
+    # model = sl.get_best_winner_prediction_model()
+    # feature_names = dp.get_feature_names()
+    # fml = featureManipulator(model, x_test, y_test, feature_names, party_dict=dict)
+    # fml.find_continuous_dramatic_feature()
+    # fml.find_binary_dramatic_feature()
 
 if __name__ == "__main__":
     main()

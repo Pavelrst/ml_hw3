@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import copy
+import pandas as pd
 import pprint as pp
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
@@ -57,6 +58,8 @@ class modelSelector():
         self.best_model_for_vote_prediction = None  # (model, model_name) automatically selected models
         self.division_dist = []
         self.best_model_for_division_prediction = None
+        self.best_accuracy_model = None
+        self.best_one_for_all = None
 
     def fit(self):
         for model, model_name in zip(self.model_list, self.model_names_list):
@@ -67,9 +70,27 @@ class modelSelector():
         return self.best_model_for_winner_prediction
 
     def score_accuracy(self, graphic=True):
+        best_acc = 0
         for model, model_name in zip(self.model_list, self.model_names_list):
             acc = model.score(self.x_val, self.y_val)
             print("Model ", model_name, " reached ", np.round(acc*100,2), "% accuracy.")
+            if acc > best_acc:
+                best_acc = acc
+                self.best_accuracy_model = (model, model_name)
+
+        # Calc test error!
+        err = 1 - self.best_accuracy_model[0].score(self.x_test,self.y_test)
+        print("Model ", self.best_accuracy_model[1], " reached ", np.round(err*100,2), "% error.")
+
+    def save_votes_to_csv(self):
+        model, model_name = self.best_accuracy_model
+        predictions = model.predict(self.x_test)
+        ids = self.id_test
+        pred_pd = pd.DataFrame(
+            {'ID': ids,
+             'Vote': predictions
+             })
+        pred_pd.to_csv('predicted_labels.csv')
 
     def score_who_win(self, graphic=True):
         '''
@@ -104,7 +125,7 @@ class modelSelector():
                           'predictions', 'true labels', self.party_dict, suptitle=supttl)
 
             pred_winner = max(set(predictions), key=predictions.tolist().count)
-            real_winner = max(set(self.y_test), key=self.y_test.tolist().count)
+            real_winner = max(set(self.y_val), key=self.y_val.tolist().count)
 
             if pred_winner == real_winner:
                 if curr_norm > highest_norm:
@@ -134,7 +155,7 @@ class modelSelector():
 
             for pred in predictions:
                 pred_hist[pred] += 1
-            for label in self.y_test.tolist():
+            for label in self.y_val.tolist():
                 true_hist[label] += 1
 
             dist = np.linalg.norm(np.array(pred_hist) - np.array(true_hist))
@@ -225,6 +246,48 @@ class modelSelector():
 
         print("best model for transportation is ", self.best_model_for_vote_prediction[1])
 
+    def score_one_for_all(self, graphic=True):
+        candidates = []
+        for model, model_name in zip(self.model_list, self.model_names_list):
+            predictions = model.predict(self.x_val)
+
+            pred_winner = max(set(predictions), key=predictions.tolist().count)
+            real_winner = max(set(self.y_val), key=self.y_val.tolist().count)
+
+            if pred_winner == real_winner:
+                candidates.append((model, model_name))
+
+        self.vote_acc = []
+        true_dict = copy.deepcopy(EMPTY_DICT)
+        fill_true_dict(true_dict, self.id_val, self.y_val)
+        best_score = 0
+        for model, model_name in candidates:
+            predictions_proba = model.predict_proba(self.x_val)
+            pred_dict = copy.deepcopy(EMPTY_DICT)
+            fill_pred_dict(pred_dict, self.id_val, predictions_proba)
+
+            score = 0
+            forgotten_voters_list = []
+            intersec_list = []
+            false_riders_list = []
+            for key in true_dict:
+                true_set = true_dict[key]
+                pred_set = pred_dict[key]
+                intersec = len(true_set.intersection(pred_set))
+                forgotten_voters = len(true_set.difference(pred_set))
+                false_riders = len(pred_set.difference(true_set))
+                forgotten_voters_list.append(forgotten_voters)
+                false_riders_list.append(false_riders)
+                intersec_list.append(intersec)
+                score += intersec
+                score -= false_riders
+                score -= forgotten_voters
+            if score > best_score:
+                best_score = score
+                self.best_one_for_all = (model, model_name)
+        print("Best one for all is ", self.best_one_for_all[1])
+
+
     def predict_winner(self, x_test):
         if self.best_model_for_winner_prediction is not None:
             model, model_name = self.best_model_for_winner_prediction
@@ -247,6 +310,9 @@ class modelSelector():
         for idx, num in enumerate(pred_hist):
             print("Party ", self.party_dict[idx], ":", np.round((num/total)*100, 1), "%")
 
+
+
+
     def predict_transportation(self, x_test):
         model, model_name = self.best_model_for_vote_prediction
         predictions_proba = model.predict_proba(x_test)
@@ -257,7 +323,7 @@ class modelSelector():
             print("Party ", self.party_dict[int(key)], ":", pred_dict[key])
 
     def draw_conf_matrix(self):
-        model, model_name = self.best_model_for_vote_prediction
+        model, model_name = self.best_accuracy_model
         predictions = model.predict(self.x_test)
 
         np.set_printoptions(precision=2)
