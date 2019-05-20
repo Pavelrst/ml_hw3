@@ -190,6 +190,28 @@ class modelSelector():
         print("best model for vote division is ", self.best_model_for_division_prediction[1])
         return self.division_dist
 
+    def score_transportation_f1(self, graphic = True):
+        f1_weighted_list = []
+        f1_micro_list = []
+        f1_macro_list = []
+        for model, model_name in zip(self.model_list, self.model_names_list):
+            predictions = model.predict(self.x_val)
+            f1_weighted_list.append(f1_score(self.y_val, predictions, average='weighted'))
+            f1_micro_list.append(f1_score(self.y_val, predictions, average='micro'))
+            f1_macro_list.append(f1_score(self.y_val, predictions, average='macro'))
+        if graphic:
+            index = np.arange(len(self.model_list))
+            bar_width = 0.2
+            plt.bar(index - bar_width, f1_weighted_list, bar_width, color='grey', label='f1_weighted')
+            plt.bar(index, f1_micro_list, bar_width, color='green', label='f1_micro')
+            plt.bar(index + bar_width, f1_macro_list, bar_width, color='red',label='f1_macro')
+            keys = list(index)
+            values = list(self.model_names_list)
+            plt.xticks(keys, values, rotation='vertical')
+            plt.legend()
+            plt.grid()
+            plt.show()
+
     def score_transportation_prediction(self, graphic = True):
         '''
         === This is third mandatory prediction ===

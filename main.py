@@ -46,11 +46,12 @@ def main():
                        id_test, x_test, y_test,
                        models, model_names, dict)
     sl.fit()
-    sl.score_accuracy()
-    sl.save_votes_to_csv()
-    sl.score_who_win(graphic=True)
-    sl.score_transportation_prediction(graphic=True)
-    sl.score_division_prediction(graphic=True)
+    sl.score_transportation_f1()
+    # sl.score_accuracy()
+    # sl.save_votes_to_csv()
+    # sl.score_who_win(graphic=True)
+    # sl.score_transportation_prediction(graphic=True)
+    # sl.score_division_prediction(graphic=True)
 
     # One for each
     # sl.predict_winner(x_test)
@@ -60,14 +61,14 @@ def main():
     # sl.get_test_error()
 
     # One for all
-    sl.score_one_for_all()
-    sl.predict_winner(x_test, True)
-    sl.predict_vote_division(x_test, True)
-    sl.predict_transportation(x_test, True)
-    sl.draw_conf_matrix(True)
-    sl.get_test_error(True)
+    # sl.score_one_for_all()
+    # sl.predict_winner(x_test, True)
+    # sl.predict_vote_division(x_test, True)
+    # sl.predict_transportation(x_test, True)
+    # sl.draw_conf_matrix(True)
+    # sl.get_test_error(True)
 
-    #
+    # Features manipulation
     # model = sl.get_best_winner_prediction_model()
     # feature_names = dp.get_feature_names()
     # fml = featureManipulator(model, x_test, y_test, feature_names, party_dict=dict)
