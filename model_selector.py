@@ -9,6 +9,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
 from hist_plotter import plot_hist
+from sklearn.metrics import f1_score
 
 PATH_WINNER_PARTY_PLOTS = 'Winner_party_plots'
 PATH_VOTE_PREDICTION_PLOTS = 'Vote_prediction_plots'
@@ -78,9 +79,23 @@ class modelSelector():
                 best_acc = acc
                 self.best_accuracy_model = (model, model_name)
 
-        # Calc test error!
-        err = 1 - self.best_accuracy_model[0].score(self.x_test,self.y_test)
-        print("Model ", self.best_accuracy_model[1], " reached ", np.round(err*100,2), "% error.")
+    def get_test_error(self, one_for_all=False):
+        if not one_for_all:
+            if self.best_accuracy_model is not None:
+                #TODO: not sure which model
+                model, model_name = self.best_accuracy_model
+            else:
+                print("Model is None")
+                return
+        else:
+            if self.best_one_for_all is not None:
+                model, model_name = self.best_one_for_all
+            else:
+                print("Model is None")
+                return
+
+        err = 1 - model.score(self.x_test, self.y_test)
+        print("Model ", model_name, " reached ", np.round(err*100,2), "% error.")
 
     def save_votes_to_csv(self):
         model, model_name = self.best_accuracy_model
@@ -288,19 +303,40 @@ class modelSelector():
         print("Best one for all is ", self.best_one_for_all[1])
 
 
-    def predict_winner(self, x_test):
-        if self.best_model_for_winner_prediction is not None:
-            model, model_name = self.best_model_for_winner_prediction
-            predictions = model.predict(x_test)
-            winner = max(set(predictions), key=predictions.tolist().count)
-            winner_name = self.party_dict[winner]
-            print(model_name," prediction - ", winner_name, " party will win the elections.")
-            return winner
+    def predict_winner(self, x_test, one_for_all=False):
+        if not one_for_all:
+            if self.best_model_for_winner_prediction is not None:
+                model, model_name = self.best_model_for_winner_prediction
+            else:
+                print("No best model for this task")
+                return
         else:
-            print("No best model for this task")
+            if self.best_one_for_all is not None:
+                model, model_name = self.best_one_for_all
+            else:
+                print("No best one for all")
+                return
 
-    def predict_vote_division(self, x_test):
-        model, model_name = self.best_model_for_division_prediction
+        predictions = model.predict(x_test)
+        winner = max(set(predictions), key=predictions.tolist().count)
+        winner_name = self.party_dict[winner]
+        print(model_name, " prediction - ", winner_name, " party will win the elections.")
+        return winner
+
+    def predict_vote_division(self, x_test, one_for_all=False):
+        if not one_for_all:
+            if self.best_model_for_division_prediction is not None:
+                model, model_name = self.best_model_for_division_prediction
+            else:
+                print("No best model for this task")
+                return
+        else:
+            if self.best_one_for_all is not None:
+                model, model_name = self.best_one_for_all
+            else:
+                print("No best one for all")
+                return
+
         predictions = model.predict(x_test)
         pred_hist = [0] * self.num_of_classes
         for pred in predictions:
@@ -311,10 +347,20 @@ class modelSelector():
             print("Party ", self.party_dict[idx], ":", np.round((num/total)*100, 1), "%")
 
 
+    def predict_transportation(self, x_test, one_for_all=False):
+        if not one_for_all:
+            if self.best_model_for_vote_prediction is not None:
+                model, model_name = self.best_model_for_vote_prediction
+            else:
+                print("No best model for this task")
+                return
+        else:
+            if self.best_one_for_all is not None:
+                model, model_name = self.best_one_for_all
+            else:
+                print("No best one for all")
+                return
 
-
-    def predict_transportation(self, x_test):
-        model, model_name = self.best_model_for_vote_prediction
         predictions_proba = model.predict_proba(x_test)
         pred_dict = copy.deepcopy(EMPTY_DICT)
         fill_pred_dict(pred_dict, self.id_val, predictions_proba)
@@ -322,8 +368,21 @@ class modelSelector():
         for key in pred_dict:
             print("Party ", self.party_dict[int(key)], ":", pred_dict[key])
 
-    def draw_conf_matrix(self):
-        model, model_name = self.best_accuracy_model
+
+    def draw_conf_matrix(self, one_for_all=False):
+        if not one_for_all:
+            if self.best_accuracy_model is not None:
+                model, model_name = self.best_accuracy_model
+            else:
+                print("No best model for this task")
+                return
+        else:
+            if self.best_one_for_all is not None:
+                model, model_name = self.best_one_for_all
+            else:
+                print("No best one for all")
+                return
+
         predictions = model.predict(self.x_test)
 
         np.set_printoptions(precision=2)
@@ -335,7 +394,10 @@ class modelSelector():
         plot_confusion_matrix(self.y_test, predictions, title='Confusion matrix of '+model_name, classes=class_names)
         fig = plt.gcf()
         plt.show()
-        path = PATH_CONFUSION + '\\' + 'confusion_fig.png'
+        if one_for_all:
+            path = PATH_CONFUSION + '\\' + 'confusion_fig_one_for_all.png'
+        else:
+            path = PATH_CONFUSION + '\\' + 'confusion_fig.png'
         fig.savefig(path, bbox_inches='tight')
 
 

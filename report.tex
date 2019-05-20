@@ -352,7 +352,56 @@ Model  Random_Forest  reached  25.53 % error.
 
 \newpage
 \section{Comparison with one model approach}
+In addition to "different model for each task" selection we want to try the "one mode" approach. In this section we will answer the same questions as in our prediction tasks, add a confusion matrix and test error result.
+\subsection{How do we select the best model}
+We decided to create automatic model selection process in the same class $modelSelector$ which selects one model for all tasks by executing a two stage process:
+\begin{enumerate}
+\item Evaluate all candidate models on validation set and select all the models which predicted correctly the winner party. We see this task as the most important as it predicts who is the winner - the most important outcome of the elections.
+\item Evaluate all selected models on validation set to predict the most probable voters for the transportation task, and select the model which performed better than others according to metrics of this task. We see the transportation task as the second important task as a serious financial investment involved in it. Finally, the model with best performance selected as "one for all" model. 
+\end{enumerate}
+It's worth to mention that we don't evaluate the model on the validation set to get a score for the votes division task, as wee see this task least important. Moreover, as we can see from our previous results, a model with best transportation task score, actually handles very good the vote division task as well. Finally, the best for all model was:
 
+\begin{verbatim}
+Best one for all is  SVM_rbf
+\end{verbatim}
+
+\subsection{Final answers}
+\begin{enumerate}
+\item Winner party:
+	\begin{verbatim}
+	SVM_rbf  prediction -  Purples  party will win the elections.
+	\end{verbatim}
+\item Votes division:
+	\begin{verbatim}
+SVM_rbf  prediction - Vote division:
+Party  Blues : 5.5 %
+Party  Browns : 7.9 %
+Party  Greens : 5.5 %
+Party  Greys : 8.7 %
+Party  Khakis : 21.0 %
+Party  Oranges : 2.6 %
+Party  Pinks : 2.8 %
+Party  Purples : 26.1 %
+Party  Reds : 4.4 %
+Party  Turquoises : 5.0 %
+Party  Violets : 3.3 %
+Party  Whites : 3.3 %
+Party  Yellows : 3.9 %
+	\end{verbatim}
+\item Confusion matrix:
+	\begin{figure}[htp]
+	\centering
+	\includegraphics[width=.5\textwidth]{confusion_matrix/confusion_fig_one_for_all}
+	\caption{Confusion matrix of One for all model}
+	\end{figure}
+\item Test error:
+	\begin{verbatim}
+	Model  SVM_rbf  reached  27.47 % error
+	\end{verbatim}
+\end{enumerate}
+
+\subsection{Comparison}
+As we can see, in both cases we could correctly predict the winner party. The vote division is slightly different, but as we mentioned previously we are not interested in high quality results in this task. The test Error is higher as the models were scored by other metrics rather than error or accuracy. The main advantage of one for all method is simplicity of implementation.
 
 \newpage
 \section{Feature manipulation}

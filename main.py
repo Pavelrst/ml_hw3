@@ -47,17 +47,26 @@ def main():
                        models, model_names, dict)
     sl.fit()
     sl.score_accuracy()
-    # sl.save_votes_to_csv()
-    # sl.score_who_win(graphic=True)
-    # sl.score_transportation_prediction(graphic=True)
-    # sl.score_division_prediction(graphic=True)
-    sl.score_one_for_all()
+    sl.save_votes_to_csv()
+    sl.score_who_win(graphic=True)
+    sl.score_transportation_prediction(graphic=True)
+    sl.score_division_prediction(graphic=True)
 
+    # One for each
     # sl.predict_winner(x_test)
     # sl.predict_vote_division(x_test)
     # sl.predict_transportation(x_test)
-    #
     # sl.draw_conf_matrix()
+    # sl.get_test_error()
+
+    # One for all
+    sl.score_one_for_all()
+    sl.predict_winner(x_test, True)
+    sl.predict_vote_division(x_test, True)
+    sl.predict_transportation(x_test, True)
+    sl.draw_conf_matrix(True)
+    sl.get_test_error(True)
+
     #
     # model = sl.get_best_winner_prediction_model()
     # feature_names = dp.get_feature_names()
