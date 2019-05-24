@@ -221,63 +221,63 @@ class crossValidator():
             fig.savefig(path, bbox_inches='tight')
             plt.show()
 
-    def tuneMLP(self, graphic=True):
+    def tuneMLP(self, max_iter = 500, graphic=True):
         scores1 = []
         scores2 = []
-        #scores3 = []
-        #scores4 = []
-        #scores5 = []
-        #scores6 = []
-        h_list = np.arange(5, 170, 20)
+        scores3 = []
+        scores4 = []
+        scores5 = []
+        scores6 = []
+        h_list = np.arange(15, 170, 20)
         for h in h_list:
             print("training for h=", h)
             avg_score1 = 0
             avg_score2 = 0
-            #avg_score3 = 0
-            #avg_score4 = 0
-            #avg_score5 = 0
-            #avg_score6 = 0
-            mlp1 = MLPClassifier([h], activation='relu', max_iter=1000)
-            mlp2 = MLPClassifier([h, h], activation='relu', max_iter=1000)
-            #mlp3 = MLPClassifier([h, h, h], activation='relu', max_iter=1000)
-            #mlp4 = MLPClassifier([h], activation='tanh', max_iter=1000)
-            #mlp5 = MLPClassifier([h, h], activation='tanh', max_iter=1000)
-            #mlp6 = MLPClassifier([h, h, h], activation='tanh', max_iter=1000)
+            avg_score3 = 0
+            avg_score4 = 0
+            avg_score5 = 0
+            avg_score6 = 0
+            mlp1 = MLPClassifier([h], activation='relu', max_iter=max_iter)
+            mlp2 = MLPClassifier([h, h], activation='relu', max_iter=max_iter)
+            mlp3 = MLPClassifier([h, h, h], activation='relu', max_iter=max_iter)
+            mlp4 = MLPClassifier([h], activation='tanh', max_iter=max_iter)
+            mlp5 = MLPClassifier([h, h], activation='tanh', max_iter=max_iter)
+            mlp6 = MLPClassifier([h, h, h], activation='tanh', max_iter=max_iter)
             for train_index, test_index in self.kf.split(self.set_x):
                 x_train, x_test = self.set_x[train_index], self.set_x[test_index]
                 y_train, y_test = self.set_y[train_index], self.set_y[test_index]
                 mlp1.fit(x_train, y_train)
                 mlp2.fit(x_train, y_train)
-                #mlp3.fit(x_train, y_train)
-                #mlp4.fit(x_train, y_train)
-                #mlp5.fit(x_train, y_train)
-                #mlp6.fit(x_train, y_train)
+                mlp3.fit(x_train, y_train)
+                mlp4.fit(x_train, y_train)
+                mlp5.fit(x_train, y_train)
+                mlp6.fit(x_train, y_train)
                 score1 = mlp1.score(x_test, y_test)
                 score2 = mlp2.score(x_test, y_test)
-                #score3 = mlp3.score(x_test, y_test)
-                #score4 = mlp4.score(x_test, y_test)
-                #score5 = mlp5.score(x_test, y_test)
-                #score6 = mlp6.score(x_test, y_test)
+                score3 = mlp3.score(x_test, y_test)
+                score4 = mlp4.score(x_test, y_test)
+                score5 = mlp5.score(x_test, y_test)
+                score6 = mlp6.score(x_test, y_test)
                 avg_score1 += score1
                 avg_score2 += score2
-                #avg_score3 += score3
-                #avg_score4 += score4
-                #avg_score5 += score5
-                #avg_score6 += score6
+                avg_score3 += score3
+                avg_score4 += score4
+                avg_score5 += score5
+                avg_score6 += score6
             scores1.append(avg_score1 / self.k)
             scores2.append(avg_score2 / self.k)
-            #scores3.append(avg_score3 / self.k)
-            #scores4.append(avg_score4 / self.k)
-            #scores5.append(avg_score5 / self.k)
-            #scores6.append(avg_score6 / self.k)
+            scores3.append(avg_score3 / self.k)
+            scores4.append(avg_score4 / self.k)
+            scores5.append(avg_score5 / self.k)
+            scores6.append(avg_score6 / self.k)
 
         if graphic:
             plt.plot(h_list, scores1, label="1 hidden, relu")
             plt.plot(h_list, scores2, label="2 hidden, relu")
-            #plt.plot(h_list, scores3, label="3 hidden, relu")
-            #plt.plot(h_list, scores4, label="1 hidden, tanh")
-            #plt.plot(h_list, scores5, label="2 hidden, tanh")
-            #plt.plot(h_list, scores6, label="3 hidden, tanh")
+            plt.plot(h_list, scores3, label="3 hidden, relu")
+            plt.plot(h_list, scores4, label="1 hidden, tanh")
+            plt.plot(h_list, scores5, label="2 hidden, tanh")
+            plt.plot(h_list, scores6, label="3 hidden, tanh")
             plt.title('hidden layers size tuning for MLP')
             plt.ylabel('Accuracy')
             plt.xlabel('hidden layers size')
