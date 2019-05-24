@@ -114,8 +114,12 @@ def fill_missing_vals_by_mean(train, val, test, features):
     assert isinstance(features, (list, set))
 
     for f in features:
+        # compute mean
+        train_and_val = pd.concat([train, val])
+        mean = train_and_val[f].mean()
+
         for data_set in (train, val, test):
-            data_set[f].fillna(data_set[f].mean(), inplace=True)
+            data_set[f].fillna(mean, inplace=True)
             assert data_set[f].isna().sum() == 0
     return train, val, test
 
