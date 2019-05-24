@@ -74,7 +74,9 @@ def __fill_missing_linear_regression(train, validation, test, features, corr_mat
         while corr_tuples[0][0] >= LINEAR_FILL_CORR_THRESHOLD and \
                 sum([s[feature].isna().sum() for s in (train, validation, test)]) > 0:
             reference_feature = corr_tuples[0][1]
-            feature_duo = train[[reference_feature, feature]].copy()
+            feature_duo_train = train[[reference_feature, feature]].copy()
+            feature_duo_val = validation[[reference_feature, feature]].copy()
+            feature_duo = pd.concat([feature_duo_train, feature_duo_val])
             feature_duo = feature_duo.dropna(how='any')
 
             lin_model = linear_model.LinearRegression()
