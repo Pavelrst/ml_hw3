@@ -39,15 +39,17 @@ def scale_sets(train, val, test):
     non_gaussian_features = ['Avg_monthly_expense_on_pets_or_plants', 'Weighted_education_rank',
                              'Yearly_ExpensesK']
 
+    train_and_val = pd.concat([train, val])
+
     for f in non_gaussian_features:
-        f_max = train[f].max()
-        f_min = train[f].min()
+        f_max = train_and_val[f].max()
+        f_min = train_and_val[f].min()
         for data_set in (train, val, test):
             scale_min_max(data_set, f, f_min, f_max)
 
     for f in gaussian_features:
-        f_mean = train[f].mean()
-        f_std = train[f].std()
+        f_mean = train_and_val[f].mean()
+        f_std = train_and_val[f].std()
         for data_set in (train, val, test):
             scale_zscore(data_set, f, f_mean, f_std)
 
