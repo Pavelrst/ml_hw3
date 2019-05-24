@@ -235,9 +235,12 @@ def delete_outliers(train_set, val_set, test_set, features, verbose=True):
         start_num_nans = num_nas(train_set, val_set, test_set, features)
 
     for f in features:
+        # find the mean and the std
+        train_and_val = pd.concat([train_set, val_set])
+        std = train_and_val[f].std()
+        mean = train_and_val[f].mean()
+
         for data_set in (train_set, val_set, test_set):
-            std = data_set[f].std()
-            mean = data_set[f].mean()
             delta = STD_DIFF * std
             for index, row in data_set[~data_set[f].between(mean - delta, mean + delta)].iterrows():
                 data_set.ix[index, f] = np.nan
