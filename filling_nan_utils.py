@@ -268,7 +268,8 @@ def fill_categorical_missing_vals(train, val, test, features):
     assert isinstance(test, pd.DataFrame)
 
     for f in features:
-        value_counts = train[f].value_counts()
+        train_and_val = pd.concat([train, val])
+        value_counts = train_and_val[f].value_counts()
         total_value_count = value_counts.sum()
 
         for data_set in (train, val, test):
