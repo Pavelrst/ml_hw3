@@ -16,23 +16,29 @@ NUMERIC_TARGET_FEATURES = ['Avg_environmental_importance', 'Avg_government_satis
                            'Avg_Residancy_Altitude', 'Number_of_valued_Kneset_members',
                            'Yearly_ExpensesK', 'Weighted_education_rank']
 CATEGORIC_TARGET_FEATURES = ['Most_Important_Issue']
-NUMERIC_USEFUL_FEATURES = ['Avg_Residancy_Altitude', 'Avg_Satisfaction_with_previous_vote',
-                           'Avg_education_importance', 'Avg_environmental_importance',
-                           'Avg_government_satisfaction', 'Avg_monthly_expense_on_pets_or_plants',
-                           'Avg_monthly_expense_when_under_age_21', 'Avg_monthly_household_cost',
-                           'Avg_monthly_income_all_years', 'Avg_size_per_room', 'Last_school_grades',
-                           'Number_of_valued_Kneset_members', 'Phone_minutes_10_years',
-                           'Political_interest_Total_Score', 'Weighted_education_rank',
-                           'Yearly_ExpensesK']
+CORRELATED_NUMERIC_FEATURES = ['Avg_Satisfaction_with_previous_vote',
+                               'Avg_monthly_expense_when_under_age_21', 'Avg_monthly_household_cost',
+                               'Avg_size_per_room', 'Phone_minutes_10_years']
+NUMERIC_USEFUL_FEATURES = NUMERIC_TARGET_FEATURES + CORRELATED_NUMERIC_FEATURES
+
+GAUSSIAN_TARGET_FEATURES = ['Avg_Residancy_Altitude', 'Avg_education_importance',
+                            'Avg_environmental_importance', 'Avg_government_satisfaction',
+                            'Number_of_valued_Kneset_members']
+GAUSSIAN_CORRELATED_FEATURES = ['Avg_Satisfaction_with_previous_vote', 'Avg_monthly_household_cost',
+                               'Avg_size_per_room']
+ALL_GAUSSIAN_FEATURES = GAUSSIAN_TARGET_FEATURES + GAUSSIAN_CORRELATED_FEATURES
+NON_GAUSSIAN_TARGET_FEATURES = ['Avg_monthly_expense_on_pets_or_plants', 'Weighted_education_rank',
+                                'Yearly_ExpensesK']
 
 
 def main():
     train_set, val_set, test_set = load_and_split('ElectionsData.csv', '.')
     train_set, val_set, test_set = set_clean(train_set, val_set, test_set,
                                              verbose=True, graphic=True)
-    assert sum([s.isna().sum().sum() for s in (train_set, val_set, test_set)]) == 0
+
     train_set, val_set, test_set = remove_inconsistency(train_set, val_set, test_set)
     train_set, val_set, test_set = data_transformation(train_set, val_set, test_set, False)
+    assert sum([s.isna().sum().sum() for s in (train_set, val_set, test_set)]) == 0
 
     save_datasets(train_set, val_set, test_set)
     export_features_to_csv(list(train_set))
@@ -95,6 +101,7 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     :param test: pandas dataframe test set
     :return: cleaned train, val, test
     """
+
     init_features = NUMERIC_USEFUL_FEATURES + CATEGORIC_TARGET_FEATURES + ['Vote']
     all_sets = [train_set, val_set, test_set]
     for index, data_set in enumerate(all_sets):
@@ -108,16 +115,16 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     assert clipped_num_nans > init_num_nans
 
     train_set, val_set, test_set = \
-        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_TARGET_FEATURES)
+        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES, NUMERIC_TARGET_FEATURES)
     first_fill_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
-    assert clipped_num_nans > first_fill_num_nans
+    assert clipped_num_nans >= first_fill_num_nans
 
-    delete_outliers(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES)
+    delete_outliers(train_set, val_set, test_set, ALL_GAUSSIAN_FEATURES)
     no_outliers_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
-    assert no_outliers_num_nans > first_fill_num_nans
+    assert no_outliers_num_nans >= first_fill_num_nans
 
     train_set, val_set, test_set = \
-        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_TARGET_FEATURES)
+        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES, NUMERIC_TARGET_FEATURES)
     sec_lin_reg_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
     assert sec_lin_reg_num_nans <= no_outliers_num_nans
 
@@ -134,9 +141,6 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     num_features_full_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
     assert num_features_full_num_nans <= sec_lin_reg_num_nans
     assert num_nas(train_set, val_set, test_set, NUMERIC_TARGET_FEATURES) == 0
-
-    fill_categorical_missing_vals(train_set, val_set, test_set, CATEGORIC_TARGET_FEATURES)
-    assert num_nas(train_set, val_set, test_set, TARGET_FEATURES) == 0
 
     return train_set, val_set, test_set
 
@@ -194,7 +198,13 @@ def data_transformation(train_set, val_set, test_set, graphic=False):
     """
     if graphic:
         show_set_hist(train_set, title='train_set histogram before scaling')
-    train_set, val_set, test_set = scale_sets(train_set, val_set, test_set)
+    train_set, val_set, test_set = scale_sets(train_set, val_set, test_set, GAUSSIAN_TARGET_FEATURES,
+                                              NON_GAUSSIAN_TARGET_FEATURES)
+
+    train_set, val_set, test_set = \
+        fill_categorical_missing_vals(train_set, val_set, test_set, CATEGORIC_TARGET_FEATURES)
+    assert num_nas(train_set, val_set, test_set, TARGET_FEATURES) == 0
+
     if graphic:
         show_set_hist(train_set, title='train_set histogram after scaling')
     transform_categoric(train_set, val_set, test_set)

@@ -2,19 +2,19 @@ import random
 from sklearn import linear_model
 from graphic_utils import *
 import math
+from transform_util import transform_label
 
-
-LINEAR_FILL_CORR_THRESHOLD = 0.6
+LINEAR_FILL_CORR_THRESHOLD = 0.93
 CAT_RARITY_THRESHOLD = 0.01
 STD_DIFF = 3
 
 plt.rcParams.update({'font.size': 5})
 
 FEATURES_TO_CLIP = ['Avg_environmental_importance', 'Avg_government_satisfaction',
-                   'Avg_education_importance', 'Most_Important_Issue',
-                   'Avg_monthly_expense_on_pets_or_plants', 'Avg_Residancy_Altitude',
-                   'Yearly_ExpensesK', 'Weighted_education_rank',
-                   'Number_of_valued_Kneset_members']
+                    'Avg_education_importance', 'Most_Important_Issue',
+                    'Avg_monthly_expense_on_pets_or_plants', 'Avg_Residancy_Altitude',
+                    'Yearly_ExpensesK', 'Weighted_education_rank',
+                    'Number_of_valued_Kneset_members']
 
 
 def num_nas(train, val, test, features):
@@ -74,6 +74,7 @@ def __fill_missing_linear_regression(train, validation, test, features, corr_mat
         while corr_tuples[0][0] >= LINEAR_FILL_CORR_THRESHOLD and \
                 sum([s[feature].isna().sum() for s in (train, validation, test)]) > 0:
             reference_feature = corr_tuples[0][1]
+            print("useful feature: ", reference_feature)
             feature_duo_train = train[[reference_feature, feature]].copy()
             feature_duo_val = validation[[reference_feature, feature]].copy()
             feature_duo = pd.concat([feature_duo_train, feature_duo_val])
@@ -124,14 +125,14 @@ def fill_missing_vals_by_mean(train, val, test, features):
     return train, val, test
 
 
-
-def fill_nans_by_lin_regress(train_set, val_set, test_set, features, verbose=True,
-                             graphic=False, all_history=False):
+def fill_nans_by_lin_regress(train_set, val_set, test_set, corr_features, target_features,
+                             verbose=True, graphic=False, all_history=False):
     '''
     Fills all numeric missing values in all three sets, first by correlated features then the rest
     are just filled by the median value
     :param graphic: Whether to show graphs
-    :param features: list of relevant numeric features
+    :param corr_features: list of relevant numeric features
+    :param target_features: all features we fill NaNs in
     :param all_history: Running entire history of experimentations
     :return:
     '''
@@ -139,11 +140,12 @@ def fill_nans_by_lin_regress(train_set, val_set, test_set, features, verbose=Tru
     assert isinstance(val_set, pd.DataFrame)
     assert isinstance(test_set, pd.DataFrame)
 
-    corr_matrix = train_set[features].corr()
+    train_and_val = pd.concat([train_set, val_set])
+    corr_matrix = train_and_val[corr_features].corr()
     corr_matrix = abs(corr_matrix)
 
     train_set, val_set, test_set = \
-        __fill_missing_linear_regression(train_set, val_set, test_set, features, corr_matrix)
+        __fill_missing_linear_regression(train_set, val_set, test_set, target_features, corr_matrix)
 
     return train_set, val_set, test_set
 
@@ -238,9 +240,11 @@ def delete_outliers(train_set, val_set, test_set, features, verbose=True):
     if verbose:
         start_num_nans = num_nas(train_set, val_set, test_set, features)
 
+    train_and_val = pd.concat([train_set, val_set])
+
     for f in features:
         # find the mean and the std
-        train_and_val = pd.concat([train_set, val_set])
+
         std = train_and_val[f].std()
         mean = train_and_val[f].mean()
 
@@ -251,9 +255,9 @@ def delete_outliers(train_set, val_set, test_set, features, verbose=True):
 
     if verbose:
         final_num_nans = num_nas(train_set, val_set, test_set, features)
-        percentage_dropped_by_clipping = \
+        percentage_dropped_by_std_dropping = \
             (float(final_num_nans - start_num_nans) * 100) / (10000 * len(train_set.columns))
-        print("Outliers dropped:", str(percentage_dropped_by_clipping) + '%', 'of all data sets combined')
+        print("Outliers dropped:", str(percentage_dropped_by_std_dropping) + '%', 'of all data sets combined')
 
 
 def fill_categorical_missing_vals(train, val, test, features):
@@ -267,21 +271,39 @@ def fill_categorical_missing_vals(train, val, test, features):
     assert isinstance(val, pd.DataFrame)
     assert isinstance(test, pd.DataFrame)
 
-    for f in features:
-        train_and_val = pd.concat([train, val])
-        value_counts = train_and_val[f].value_counts()
-        total_value_count = value_counts.sum()
+    train_and_val = pd.concat([train, val])
+    tree_data = train_and_val[(~train_and_val['Most_Important_Issue'].isnull())]
+    assert train_and_val[(~train_and_val['Most_Important_Issue'].isnull())].isna().sum().sum() == 0
+    tree_data = tree_data.drop(columns='Vote')
+    transform_label(tree_data, 'Most_Important_Issue')
+    X = tree_data.drop(columns='Most_Important_Issue')
+    Y = tree_data['Most_Important_Issue']
 
-        for data_set in (train, val, test):
-            for index, row in data_set[data_set[f].isnull()].iterrows():
-                sample_index = random.randint(1, total_value_count)
-                for label, count in value_counts.iteritems():
-                    if sample_index <= count:
-                        data_set.ix[index, f] = label
-                        break
-                    sample_index -= count
-                assert data_set[f][index] != np.nan
+    from sklearn import neighbors
+    clf = neighbors.KNeighborsClassifier(10)
+    clf = clf.fit(X, Y)
 
-    assert num_nas(train, val, test, features) == 0
+    all_sets = [train, val, test]
+    for i, data_set in enumerate(all_sets):
+        no_nan_cat_features = data_set[(~data_set['Most_Important_Issue'].isnull())]
+        assert train_and_val[(~train_and_val['Most_Important_Issue'].isnull())].isna().sum().sum() == 0
+        nan_cat_features = data_set[data_set['Most_Important_Issue'].isnull()]
+
+        transform_label(no_nan_cat_features, 'Most_Important_Issue')
+
+        issueless = nan_cat_features.drop(columns='Most_Important_Issue')
+        issueless = issueless.drop(columns='Vote')
+        for index, row in nan_cat_features.iterrows():
+            nan_cat_features.ix[index, 'Most_Important_Issue'] = \
+                clf.predict(issueless.loc[index].to_numpy().reshape(1, -1))
+
+        all_sets[i] = pd.concat([no_nan_cat_features, nan_cat_features])
+
+    train = all_sets[0]
+    val = all_sets[1]
+    test = all_sets[2]
+
+    assert num_nas(train, val, test, ['Most_Important_Issue']) == 0
+    return train, val, test
 
 
