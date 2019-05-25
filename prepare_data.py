@@ -35,9 +35,10 @@ def main():
     train_set, val_set, test_set = load_and_split('ElectionsData.csv', '.')
     train_set, val_set, test_set = set_clean(train_set, val_set, test_set,
                                              verbose=True, graphic=True)
-    assert sum([s.isna().sum().sum() for s in (train_set, val_set, test_set)]) == 0
+
     train_set, val_set, test_set = remove_inconsistency(train_set, val_set, test_set)
     train_set, val_set, test_set = data_transformation(train_set, val_set, test_set, False)
+    assert sum([s.isna().sum().sum() for s in (train_set, val_set, test_set)]) == 0
 
     save_datasets(train_set, val_set, test_set)
     export_features_to_csv(list(train_set))
@@ -141,10 +142,6 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     assert num_features_full_num_nans <= sec_lin_reg_num_nans
     assert num_nas(train_set, val_set, test_set, NUMERIC_TARGET_FEATURES) == 0
 
-    train_set, val_set, test_set = \
-        fill_categorical_missing_vals(train_set, val_set, test_set, CATEGORIC_TARGET_FEATURES)
-    assert num_nas(train_set, val_set, test_set, TARGET_FEATURES) == 0
-
     return train_set, val_set, test_set
 
 
@@ -203,6 +200,11 @@ def data_transformation(train_set, val_set, test_set, graphic=False):
         show_set_hist(train_set, title='train_set histogram before scaling')
     train_set, val_set, test_set = scale_sets(train_set, val_set, test_set, GAUSSIAN_TARGET_FEATURES,
                                               NON_GAUSSIAN_TARGET_FEATURES)
+
+    train_set, val_set, test_set = \
+        fill_categorical_missing_vals(train_set, val_set, test_set, CATEGORIC_TARGET_FEATURES)
+    assert num_nas(train_set, val_set, test_set, TARGET_FEATURES) == 0
+
     if graphic:
         show_set_hist(train_set, title='train_set histogram after scaling')
     transform_categoric(train_set, val_set, test_set)

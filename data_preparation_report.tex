@@ -68,6 +68,9 @@ After checking the model outputs of the later parts of this exercise, we have fo
 After discussing with the TA in charge of the course and talking to colleagues in class, we realized this behaviour is odd. In an attempt to fix it we decided to use the validation data in all parts of our pre-processing, so we can have a more stable statistical confidence.\\
 We used the training sets for the missing values imputation and the data transformation. In the missing value steps, we have used the validation set for constructing the linear regression model to impute missing values. We used the validation set to determine the standard deviation and mean before dropping outliers. We have used the validation set for determining the distribution for the categorical feature. When scaling, we have used the validation set for finding the minimum, maximum, mean and standard deviation of each feature. We expect that at the accuracy dropoff, at least between the train and validation sets will be much smaller.
 
+\subsection{Categorical feature transformation}
+We have a single categorical feature 'Most\_Important\_Issue'. Previously we have transformed it with one hit bit transformation. We found out that when we skip this transformation and just number the different categorical values in some arbitrary order and assign ascending integers (from 0) to each category, we get higher prediction accuracy.
+
 \section{Implementing feedback on Homework 2}
 It was roughly at this stage when we got the feedback on HW2. We'll answer the questions from the feedback and implement the suggested changes.
 \subsection{Data separation}
@@ -87,5 +90,13 @@ CORRELATED_NUMERIC_FEATURES = ['Avg_Satisfaction_with_previous_vote',
 
 We now delete values that are three standard deviations or more from the mean of the feature only from the features that are gaussian.
 
+\subsection{Fill missing categrical features}
+Previously we have just sampled from the same distribution as we have seen on the train and validation sets. As suggested, we are using a classifier to try and predict the missing values. The classifier we chose is a K Nearest Neighbours classifier. We chose the number of neighbours to be 10.\\
+We also had to change the order of our actions. The KNN model is sensitiveto data sclaing and normalization. As such out new order of actions is:
+\begin{enumerate}
+\item Fill missing numeric values
+\item Scale and normalize numeric values
+\item Fill categoric values
+\end{enumerate}
 
 \end{document}

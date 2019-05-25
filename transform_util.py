@@ -54,6 +54,7 @@ def scale_sets(train, val, test, gaussian_features, non_gaussian_features):
 def split_category_to_bits(data_set, cat_feature):
     '''
     splits a categorical feature with N values to N bits
+    Currently unused
     '''
     assert isinstance(data_set, pd.DataFrame)
     for cat in data_set[cat_feature].unique():
@@ -67,8 +68,6 @@ def ___transform_categoric(data_set):
     '''
     assert isinstance(data_set, pd.DataFrame)
     assert data_set.isna().sum().sum() == 0
-    #split_category_to_bits(data_set, "Most_Important_Issue")
-    # transform_vote(data_set, "Most_Important_Issue")
     transform_label(data_set, "Vote")
 
 

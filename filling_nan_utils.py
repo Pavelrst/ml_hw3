@@ -279,8 +279,8 @@ def fill_categorical_missing_vals(train, val, test, features):
     X = tree_data.drop(columns='Most_Important_Issue')
     Y = tree_data['Most_Important_Issue']
 
-    from sklearn.ensemble import RandomForestClassifier
-    clf = RandomForestClassifier(n_estimators=10)
+    from sklearn import neighbors
+    clf = neighbors.KNeighborsClassifier(10)
     clf = clf.fit(X, Y)
 
     all_sets = [train, val, test]
@@ -302,21 +302,6 @@ def fill_categorical_missing_vals(train, val, test, features):
     train = all_sets[0]
     val = all_sets[1]
     test = all_sets[2]
-
-    # for f in features:
-    #     train_and_val = pd.concat([train, val])
-    #     value_counts = train_and_val[f].value_counts()
-    #     total_value_count = value_counts.sum()
-    #
-    #     for data_set in (train, val, test):
-    #         for index, row in data_set[data_set[f].isnull()].iterrows():
-    #             sample_index = random.randint(1, total_value_count)
-    #             for label, count in value_counts.iteritems():
-    #                 if sample_index <= count:
-    #                     data_set.ix[index, f] = label
-    #                     break
-    #                 sample_index -= count
-    #             assert data_set[f][index] != np.nan
 
     assert num_nas(train, val, test, ['Most_Important_Issue']) == 0
     return train, val, test
