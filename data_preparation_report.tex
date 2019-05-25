@@ -69,6 +69,21 @@ After discussing with the TA in charge of the course and talking to colleagues i
 We used the training sets for the missing values imputation and the data transformation. In the missing value steps, we have used the validation set for constructing the linear regression model to impute missing values. We used the validation set to determine the standard deviation and mean before dropping outliers. We have used the validation set for determining the distribution for the categorical feature. When scaling, we have used the validation set for finding the minimum, maximum, mean and standard deviation of each feature. We expect that at the accuracy dropoff, at least between the train and validation sets will be much smaller.
 
 \section{Implementing feedback on Homework 2}
-It was roughly at this stage when we got the feedback on HW2. We
-have implemented the following changes.
+It was roughly at this stage when we got the feedback on HW2. We'll answer the questions from the feedback and implement the suggested changes.
+\subsection{Data separation}
+We have splitted the data to 70% for the train set, 15% for the validation set and 15% for the test set.
+We use stratified split by the 'Vote' label between all three sets.
+\subsection{Noise, Outliers and Imputation}
+As suggested, we'll use a correlation cut-off of 0.93. We will only build a linear regression model for features with correlation $\geq 0.93$ in absolute value. This means we can discard even more features in our very initial step. The remaining correlated features are:\\
+
+\begin{adjustbox}{max width=\linewidth}
+\begin{lstlisting}
+CORRELATED_NUMERIC_FEATURES = ['Avg_Satisfaction_with_previous_vote',
+                               'Avg_monthly_expense_when_under_age_21', 'Avg_monthly_household_cost',
+                               'Avg_size_per_room', 'Phone_minutes_10_years']
+\end{lstlisting}
+\end{adjustbox}\\
+
+
+
 \end{document}

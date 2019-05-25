@@ -16,14 +16,10 @@ NUMERIC_TARGET_FEATURES = ['Avg_environmental_importance', 'Avg_government_satis
                            'Avg_Residancy_Altitude', 'Number_of_valued_Kneset_members',
                            'Yearly_ExpensesK', 'Weighted_education_rank']
 CATEGORIC_TARGET_FEATURES = ['Most_Important_Issue']
-NUMERIC_USEFUL_FEATURES = ['Avg_Residancy_Altitude', 'Avg_Satisfaction_with_previous_vote',
-                           'Avg_education_importance', 'Avg_environmental_importance',
-                           'Avg_government_satisfaction', 'Avg_monthly_expense_on_pets_or_plants',
-                           'Avg_monthly_expense_when_under_age_21', 'Avg_monthly_household_cost',
-                           'Avg_monthly_income_all_years', 'Avg_size_per_room', 'Last_school_grades',
-                           'Number_of_valued_Kneset_members', 'Phone_minutes_10_years',
-                           'Political_interest_Total_Score', 'Weighted_education_rank',
-                           'Yearly_ExpensesK']
+CORRELATED_NUMERIC_FEATURES = ['Avg_Satisfaction_with_previous_vote',
+                               'Avg_monthly_expense_when_under_age_21', 'Avg_monthly_household_cost',
+                               'Avg_size_per_room', 'Phone_minutes_10_years']
+NUMERIC_USEFUL_FEATURES = NUMERIC_TARGET_FEATURES + CORRELATED_NUMERIC_FEATURES
 
 
 def main():
@@ -95,6 +91,7 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     :param test: pandas dataframe test set
     :return: cleaned train, val, test
     """
+
     init_features = NUMERIC_USEFUL_FEATURES + CATEGORIC_TARGET_FEATURES + ['Vote']
     all_sets = [train_set, val_set, test_set]
     for index, data_set in enumerate(all_sets):
@@ -108,7 +105,7 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     assert clipped_num_nans > init_num_nans
 
     train_set, val_set, test_set = \
-        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_TARGET_FEATURES)
+        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES, NUMERIC_TARGET_FEATURES)
     first_fill_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
     assert clipped_num_nans > first_fill_num_nans
 
@@ -117,7 +114,7 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     assert no_outliers_num_nans > first_fill_num_nans
 
     train_set, val_set, test_set = \
-        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_TARGET_FEATURES)
+        fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES, NUMERIC_TARGET_FEATURES)
     sec_lin_reg_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
     assert sec_lin_reg_num_nans <= no_outliers_num_nans
 

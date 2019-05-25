@@ -4,7 +4,7 @@ from graphic_utils import *
 import math
 
 
-LINEAR_FILL_CORR_THRESHOLD = 0.6
+LINEAR_FILL_CORR_THRESHOLD = 0.93
 CAT_RARITY_THRESHOLD = 0.01
 STD_DIFF = 3
 
@@ -74,6 +74,7 @@ def __fill_missing_linear_regression(train, validation, test, features, corr_mat
         while corr_tuples[0][0] >= LINEAR_FILL_CORR_THRESHOLD and \
                 sum([s[feature].isna().sum() for s in (train, validation, test)]) > 0:
             reference_feature = corr_tuples[0][1]
+            print("useful feature: ", reference_feature)
             feature_duo_train = train[[reference_feature, feature]].copy()
             feature_duo_val = validation[[reference_feature, feature]].copy()
             feature_duo = pd.concat([feature_duo_train, feature_duo_val])
@@ -124,14 +125,14 @@ def fill_missing_vals_by_mean(train, val, test, features):
     return train, val, test
 
 
-
-def fill_nans_by_lin_regress(train_set, val_set, test_set, features, verbose=True,
-                             graphic=False, all_history=False):
+def fill_nans_by_lin_regress(train_set, val_set, test_set, corr_features, target_features,
+                             verbose=True, graphic=False, all_history=False):
     '''
     Fills all numeric missing values in all three sets, first by correlated features then the rest
     are just filled by the median value
     :param graphic: Whether to show graphs
-    :param features: list of relevant numeric features
+    :param corr_features: list of relevant numeric features
+    :param target_features: all features we fill NaNs in
     :param all_history: Running entire history of experimentations
     :return:
     '''
@@ -139,11 +140,12 @@ def fill_nans_by_lin_regress(train_set, val_set, test_set, features, verbose=Tru
     assert isinstance(val_set, pd.DataFrame)
     assert isinstance(test_set, pd.DataFrame)
 
-    corr_matrix = train_set[features].corr()
+    train_and_val = pd.concat([train_set, val_set])
+    corr_matrix = train_and_val[corr_features].corr()
     corr_matrix = abs(corr_matrix)
 
     train_set, val_set, test_set = \
-        __fill_missing_linear_regression(train_set, val_set, test_set, features, corr_matrix)
+        __fill_missing_linear_regression(train_set, val_set, test_set, target_features, corr_matrix)
 
     return train_set, val_set, test_set
 
