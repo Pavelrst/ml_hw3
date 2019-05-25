@@ -1,7 +1,7 @@
 from graphic_utils import *
 
 
-def transform_vote(_df, label):
+def transform_label(_df, label):
     '''
     transform 'Vote' column to integer values
     '''
@@ -68,8 +68,8 @@ def ___transform_categoric(data_set):
     assert isinstance(data_set, pd.DataFrame)
     assert data_set.isna().sum().sum() == 0
     #split_category_to_bits(data_set, "Most_Important_Issue")
-    transform_vote(data_set, "Most_Important_Issue")
-    transform_vote(data_set, "Vote")
+    # transform_vote(data_set, "Most_Important_Issue")
+    transform_label(data_set, "Vote")
 
 
 def transform_categoric(train, val, test):

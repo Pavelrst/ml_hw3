@@ -141,7 +141,8 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     assert num_features_full_num_nans <= sec_lin_reg_num_nans
     assert num_nas(train_set, val_set, test_set, NUMERIC_TARGET_FEATURES) == 0
 
-    fill_categorical_missing_vals(train_set, val_set, test_set, CATEGORIC_TARGET_FEATURES)
+    train_set, val_set, test_set = \
+        fill_categorical_missing_vals(train_set, val_set, test_set, CATEGORIC_TARGET_FEATURES)
     assert num_nas(train_set, val_set, test_set, TARGET_FEATURES) == 0
 
     return train_set, val_set, test_set

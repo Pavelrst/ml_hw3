@@ -2,6 +2,7 @@ import random
 from sklearn import linear_model
 from graphic_utils import *
 import math
+from transform_util import transform_label
 
 LINEAR_FILL_CORR_THRESHOLD = 0.93
 CAT_RARITY_THRESHOLD = 0.01
@@ -10,10 +11,10 @@ STD_DIFF = 3
 plt.rcParams.update({'font.size': 5})
 
 FEATURES_TO_CLIP = ['Avg_environmental_importance', 'Avg_government_satisfaction',
-                   'Avg_education_importance', 'Most_Important_Issue',
-                   'Avg_monthly_expense_on_pets_or_plants', 'Avg_Residancy_Altitude',
-                   'Yearly_ExpensesK', 'Weighted_education_rank',
-                   'Number_of_valued_Kneset_members']
+                    'Avg_education_importance', 'Most_Important_Issue',
+                    'Avg_monthly_expense_on_pets_or_plants', 'Avg_Residancy_Altitude',
+                    'Yearly_ExpensesK', 'Weighted_education_rank',
+                    'Number_of_valued_Kneset_members']
 
 
 def num_nas(train, val, test, features):
@@ -270,21 +271,54 @@ def fill_categorical_missing_vals(train, val, test, features):
     assert isinstance(val, pd.DataFrame)
     assert isinstance(test, pd.DataFrame)
 
-    for f in features:
-        train_and_val = pd.concat([train, val])
-        value_counts = train_and_val[f].value_counts()
-        total_value_count = value_counts.sum()
+    train_and_val = pd.concat([train, val])
+    tree_data = train_and_val[(~train_and_val['Most_Important_Issue'].isnull())]
+    assert train_and_val[(~train_and_val['Most_Important_Issue'].isnull())].isna().sum().sum() == 0
+    tree_data = tree_data.drop(columns='Vote')
+    transform_label(tree_data, 'Most_Important_Issue')
+    X = tree_data.drop(columns='Most_Important_Issue')
+    Y = tree_data['Most_Important_Issue']
 
-        for data_set in (train, val, test):
-            for index, row in data_set[data_set[f].isnull()].iterrows():
-                sample_index = random.randint(1, total_value_count)
-                for label, count in value_counts.iteritems():
-                    if sample_index <= count:
-                        data_set.ix[index, f] = label
-                        break
-                    sample_index -= count
-                assert data_set[f][index] != np.nan
+    from sklearn.ensemble import RandomForestClassifier
+    clf = RandomForestClassifier(n_estimators=10)
+    clf = clf.fit(X, Y)
 
-    assert num_nas(train, val, test, features) == 0
+    all_sets = [train, val, test]
+    for i, data_set in enumerate(all_sets):
+        no_nan_cat_features = data_set[(~data_set['Most_Important_Issue'].isnull())]
+        assert train_and_val[(~train_and_val['Most_Important_Issue'].isnull())].isna().sum().sum() == 0
+        nan_cat_features = data_set[data_set['Most_Important_Issue'].isnull()]
+
+        transform_label(no_nan_cat_features, 'Most_Important_Issue')
+
+        issueless = nan_cat_features.drop(columns='Most_Important_Issue')
+        issueless = issueless.drop(columns='Vote')
+        for index, row in nan_cat_features.iterrows():
+            nan_cat_features.ix[index, 'Most_Important_Issue'] = \
+                clf.predict(issueless.loc[index].to_numpy().reshape(1, -1))
+
+        all_sets[i] = pd.concat([no_nan_cat_features, nan_cat_features])
+
+    train = all_sets[0]
+    val = all_sets[1]
+    test = all_sets[2]
+
+    # for f in features:
+    #     train_and_val = pd.concat([train, val])
+    #     value_counts = train_and_val[f].value_counts()
+    #     total_value_count = value_counts.sum()
+    #
+    #     for data_set in (train, val, test):
+    #         for index, row in data_set[data_set[f].isnull()].iterrows():
+    #             sample_index = random.randint(1, total_value_count)
+    #             for label, count in value_counts.iteritems():
+    #                 if sample_index <= count:
+    #                     data_set.ix[index, f] = label
+    #                     break
+    #                 sample_index -= count
+    #             assert data_set[f][index] != np.nan
+
+    assert num_nas(train, val, test, ['Most_Important_Issue']) == 0
+    return train, val, test
 
 
