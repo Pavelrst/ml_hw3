@@ -3,7 +3,6 @@ from sklearn import linear_model
 from graphic_utils import *
 import math
 
-
 LINEAR_FILL_CORR_THRESHOLD = 0.93
 CAT_RARITY_THRESHOLD = 0.01
 STD_DIFF = 3
@@ -240,9 +239,11 @@ def delete_outliers(train_set, val_set, test_set, features, verbose=True):
     if verbose:
         start_num_nans = num_nas(train_set, val_set, test_set, features)
 
+    train_and_val = pd.concat([train_set, val_set])
+
     for f in features:
         # find the mean and the std
-        train_and_val = pd.concat([train_set, val_set])
+
         std = train_and_val[f].std()
         mean = train_and_val[f].mean()
 
@@ -253,9 +254,9 @@ def delete_outliers(train_set, val_set, test_set, features, verbose=True):
 
     if verbose:
         final_num_nans = num_nas(train_set, val_set, test_set, features)
-        percentage_dropped_by_clipping = \
+        percentage_dropped_by_std_dropping = \
             (float(final_num_nans - start_num_nans) * 100) / (10000 * len(train_set.columns))
-        print("Outliers dropped:", str(percentage_dropped_by_clipping) + '%', 'of all data sets combined')
+        print("Outliers dropped:", str(percentage_dropped_by_std_dropping) + '%', 'of all data sets combined')
 
 
 def fill_categorical_missing_vals(train, val, test, features):

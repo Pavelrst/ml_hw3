@@ -25,7 +25,7 @@ def scale_zscore(data_set, feature, mean, std):
     data_set[feature] = (data_set[feature] - mean) / float(std)
 
 
-def scale_sets(train, val, test):
+def scale_sets(train, val, test, gaussian_features, non_gaussian_features):
     '''
     Scales numeric features of all three sets
     some features are scled by min max, others by z score
@@ -33,11 +33,6 @@ def scale_sets(train, val, test):
     assert isinstance(train, pd.DataFrame)
     assert isinstance(val, pd.DataFrame)
     assert isinstance(test, pd.DataFrame)
-
-    gaussian_features = ['Avg_Residancy_Altitude', 'Avg_education_importance', 'Avg_environmental_importance',
-                         'Avg_government_satisfaction', 'Number_of_valued_Kneset_members']
-    non_gaussian_features = ['Avg_monthly_expense_on_pets_or_plants', 'Weighted_education_rank',
-                             'Yearly_ExpensesK']
 
     train_and_val = pd.concat([train, val])
 

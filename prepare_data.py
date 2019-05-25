@@ -21,6 +21,15 @@ CORRELATED_NUMERIC_FEATURES = ['Avg_Satisfaction_with_previous_vote',
                                'Avg_size_per_room', 'Phone_minutes_10_years']
 NUMERIC_USEFUL_FEATURES = NUMERIC_TARGET_FEATURES + CORRELATED_NUMERIC_FEATURES
 
+GAUSSIAN_TARGET_FEATURES = ['Avg_Residancy_Altitude', 'Avg_education_importance',
+                            'Avg_environmental_importance', 'Avg_government_satisfaction',
+                            'Number_of_valued_Kneset_members']
+GAUSSIAN_CORRELATED_FEATURES = ['Avg_Satisfaction_with_previous_vote', 'Avg_monthly_household_cost',
+                               'Avg_size_per_room']
+ALL_GAUSSIAN_FEATURES = GAUSSIAN_TARGET_FEATURES + GAUSSIAN_CORRELATED_FEATURES
+NON_GAUSSIAN_TARGET_FEATURES = ['Avg_monthly_expense_on_pets_or_plants', 'Weighted_education_rank',
+                                'Yearly_ExpensesK']
+
 
 def main():
     train_set, val_set, test_set = load_and_split('ElectionsData.csv', '.')
@@ -107,11 +116,11 @@ def set_clean(train_set, val_set, test_set, verbose=True, graphic=False):
     train_set, val_set, test_set = \
         fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES, NUMERIC_TARGET_FEATURES)
     first_fill_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
-    assert clipped_num_nans > first_fill_num_nans
+    assert clipped_num_nans >= first_fill_num_nans
 
-    delete_outliers(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES)
+    delete_outliers(train_set, val_set, test_set, ALL_GAUSSIAN_FEATURES)
     no_outliers_num_nans = num_nas(train_set, val_set, test_set, TARGET_FEATURES)
-    assert no_outliers_num_nans > first_fill_num_nans
+    assert no_outliers_num_nans >= first_fill_num_nans
 
     train_set, val_set, test_set = \
         fill_nans_by_lin_regress(train_set, val_set, test_set, NUMERIC_USEFUL_FEATURES, NUMERIC_TARGET_FEATURES)
@@ -191,7 +200,8 @@ def data_transformation(train_set, val_set, test_set, graphic=False):
     """
     if graphic:
         show_set_hist(train_set, title='train_set histogram before scaling')
-    train_set, val_set, test_set = scale_sets(train_set, val_set, test_set)
+    train_set, val_set, test_set = scale_sets(train_set, val_set, test_set, GAUSSIAN_TARGET_FEATURES,
+                                              NON_GAUSSIAN_TARGET_FEATURES)
     if graphic:
         show_set_hist(train_set, title='train_set histogram after scaling')
     transform_categoric(train_set, val_set, test_set)
