@@ -82,8 +82,8 @@ class modelSelector():
     def get_test_error(self, one_for_all=False):
         if not one_for_all:
             if self.best_accuracy_model is not None:
-                #TODO: not sure which model
-                model, model_name = self.best_accuracy_model
+                #Best f1 model
+                model, model_name = self.best_model_for_vote_prediction
             else:
                 print("Model is None")
                 return
@@ -98,7 +98,7 @@ class modelSelector():
         print("Model ", model_name, " reached ", np.round(err*100,2), "% error.")
 
     def save_votes_to_csv(self):
-        model, model_name = self.best_accuracy_model
+        model, model_name = self.best_model_for_vote_prediction
         predictions = model.predict(self.x_test)
         ids = self.id_test
         pred_pd = pd.DataFrame(
@@ -122,18 +122,18 @@ class modelSelector():
             if not os.path.exists(PATH_WINNER_PARTY_PLOTS):
                 os.mkdir(PATH_WINNER_PARTY_PLOTS)
 
-        highest_norm = 0
+        best_score = 0
         for model, model_name in zip(self.model_list, self.model_names_list):
             predictions = model.predict(self.x_val)
+            score = f1_score(self.y_val, predictions, average='weighted')
 
             pred_hist = [0] * self.num_of_classes
             for pred in predictions:
                 pred_hist[pred] += 1
-            curr_norm = np.linalg.norm(pred_hist, ord=np.inf)
 
             if graphic:
                 supttl = 'Winner party predictions'
-                ttl = 'model: ' + model_name + " inf norm=" + str(curr_norm)
+                ttl = 'model: ' + model_name + " f1 score =" + str(np.round(score, 3))
                 path = PATH_WINNER_PARTY_PLOTS + '\\' + model_name + '_fig.png'
 
                 plot_hist(path, ttl, predictions, self.y_val.tolist(),
@@ -143,8 +143,8 @@ class modelSelector():
             real_winner = max(set(self.y_val), key=self.y_val.tolist().count)
 
             if pred_winner == real_winner:
-                if curr_norm > highest_norm:
-                    highest_norm = curr_norm
+                if score > best_score:
+                    best_score = score
                     self.best_model_for_winner_prediction=(model, model_name)
         if self.best_model_for_winner_prediction is not None:
             print("best model for winner prediction is ", self.best_model_for_winner_prediction[1])
@@ -194,11 +194,18 @@ class modelSelector():
         f1_weighted_list = []
         f1_micro_list = []
         f1_macro_list = []
+        best_score = 0
         for model, model_name in zip(self.model_list, self.model_names_list):
             predictions = model.predict(self.x_val)
-            f1_weighted_list.append(f1_score(self.y_val, predictions, average='weighted'))
+            score = f1_score(self.y_val, predictions, average='weighted')
+            f1_weighted_list.append(score)
             f1_micro_list.append(f1_score(self.y_val, predictions, average='micro'))
             f1_macro_list.append(f1_score(self.y_val, predictions, average='macro'))
+
+            if score > best_score:
+                best_score = score
+                self.best_model_for_vote_prediction = (model, model_name)
+
         if graphic:
             index = np.arange(len(self.model_list))
             bar_width = 0.2
@@ -214,12 +221,7 @@ class modelSelector():
 
     def score_transportation_prediction(self, graphic = True):
         '''
-        === This is third mandatory prediction ===
-        This function provides a score against validation (test) data
-        for each model, about it's vote prediction.
-        Notice that the tags ratio should be equal in all sets!
-        best models will be saved in
-        :return: scores of performance of each model
+        Use this function only to plot graphs
         '''
         if graphic:
             if not os.path.exists(PATH_VOTE_PREDICTION_PLOTS):
@@ -254,9 +256,11 @@ class modelSelector():
                 score -= false_riders
                 score -= forgotten_voters
             #print("score = ", score)
-            if score > best_score:
-                best_score = score
-                self.best_model_for_vote_prediction = (model, model_name)
+            # if score > best_score:
+            #     best_score = score
+            #     self.best_model_for_vote_prediction = (model, model_name)
+
+            f1sc = f1_score(self.y_val, model.predict(self.x_val), average='weighted')
 
             if graphic:
                 index = np.arange(len(forgotten_voters_list))
@@ -273,7 +277,7 @@ class modelSelector():
                 plt.suptitle(supttl)
                 plt.ylim([-150,450])
                 plt.grid()
-                ttl = 'model: ' + model_name
+                ttl = 'model: ' + model_name + " - f1 score:" + str(np.round(f1sc,3))
                 plt.title(ttl)
                 plt.legend()
                 fig = plt.gcf()
@@ -393,8 +397,8 @@ class modelSelector():
 
     def draw_conf_matrix(self, one_for_all=False):
         if not one_for_all:
-            if self.best_accuracy_model is not None:
-                model, model_name = self.best_accuracy_model
+            if self.best_model_for_vote_prediction is not None:
+                model, model_name = self.best_model_for_vote_prediction
             else:
                 print("No best model for this task")
                 return

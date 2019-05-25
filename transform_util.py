@@ -72,7 +72,8 @@ def ___transform_categoric(data_set):
     '''
     assert isinstance(data_set, pd.DataFrame)
     assert data_set.isna().sum().sum() == 0
-    split_category_to_bits(data_set, "Most_Important_Issue")
+    #split_category_to_bits(data_set, "Most_Important_Issue")
+    transform_vote(data_set, "Most_Important_Issue")
     transform_vote(data_set, "Vote")
 
 

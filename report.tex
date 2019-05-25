@@ -86,6 +86,9 @@ As a part of non-mandatory assignment, we will implement the automatic model sel
 \subsection{Different models for different tasks}
 As it stated in the assignment document -  "one size doesn't fit all", i.e. different models can be the best models for each task. To handle this, we decided to include in our $modelSelector()$ class an option to select best model for each task. At the time of writing this paragraph we still don't know if the same model will be selected for all tasks or not.
 
+\subsection{No one-hot representation of Categorical data}
+During the work on this submission, we noticed a negative effect of one-hot representation of categorical data on all models performance. Thus we have decided not to convert the categorical data to one-hot representation.
+
 
 \newpage
 \section{Candidate models}
@@ -207,7 +210,7 @@ causing upper bound of 166 neurons in hidden layer. Thus, during cross validatio
 	\item Activation function - we decided to use the default option which is ReLU.
 \end{enumerate}
 
-We decided to leave other parameters at their default values as the problem of selecting the optimal neural network model is complex by itself and not should be covered in this submission, resulting 2 models trained and tested with different values of hidden layer size. As we can see from the plot, the number of hidden layers does not improve the model accuracy, while sufficient hidden layer size is 30.  
+We decided to leave other parameters at their default values as the problem of selecting the optimal neural network model is complex by itself and not should be covered in this submission, resulting 2 models trained and tested with different values of hidden layer size. As we can see from the plot, t.  
 
 \begin{figure}[h]
 \centering
@@ -218,25 +221,20 @@ We decided to leave other parameters at their default values as the problem of s
 \newpage
 \section{Performance measurements}
 \subsection{Majority votes measurement}
-For the task of prediction which party will win the majority of votes we propose to use the most simple measurement that comes to mind - "binary score": if the majority of predicted tags are from the same class as in validation set, the model score is 1, i.e. it has predicted correctly the winning party. Otherwise, the score will be 0, as the classifier predicted the wrong party. Those are the the only two possible values for this score, thus all models which got score 1 will be selected as best predictors for this task, while other models will be dropped. Unfortunately this method can give us multiple models which can predict the winner party, i.e. it doesn't choose the best model for this task, which means the binary measurement we chose is not good enough as it can provide us a relative "goodness" of the models which predicted correctly the winner party. To make the method more selective we decided to use $infinity$ $norm$ of the prediction histogram as secondary measurement. 
-\begin{gather*}
-Inf norm = max | histPredicted |   
-\end{gather*}
-The infinity norm value is simply the height of highest bin in the predictions histogram. Among those models who predicted correctly we want to choose the model which does it with highest certainty, basically we want to choose a model which gives majority tag for all samples, because we know that it our datasets, the percentage of the classes is the same.
-     
+For the task of prediction which party will win the majority of votes we propose to use the most simple measurement that comes to mind - "binary score": if the majority of predicted tags are from the same class as in validation set, the model score is 1. Unfortunately this method can give us multiple models which can predict the winner party, i.e. it doesn't choose the best model for this task, which means the binary measurement we chose is not good enough as it can't provide us a relative "goodness" of the models which predicted correctly the winner party. To make the method more selective we decided to use f1 score as secondary measurement.
+
 \subsection{Votes division measurement}
-For the task of prediction of votes division, we could use the "accuracy" or "error" measurement for the model performance, but we decided that those metrics are too strict for this task. In votes division task all we want is to predict correctly the division of the total votes (in test set) between the parties, but not a vote of each person. In other words, we want to compare a histogram of predicted votes to the histogram of true votes in the test set, thus the metrics we use is an Euclidean distance between two histograms:
+For the task of prediction of votes division we want is to predict correctly the division of the total votes (in test set) between the parties, but not a vote of each person. In other words, we want to compare a histogram of predicted votes to the histogram of true votes in the test set, thus the metrics we use is an Euclidean distance between two histograms:
 \begin{gather*}
 D = \sqrt[2]{\sum_{i=0}^{12} (histPredicted_i - histTrue_i)^2}   
 \end{gather*}
-According to this measurement, predicted votes distribution histogram which is very different form the true histogram, will be "far away" (in terms of Euclidean distance) from the true votes distribution histogram. On the other hand, predicted votes distribution histogram which is very similar to the true histogram, will be very close to it. Thus, the model with the shortest Euclidean will be considered as the best model for votes division prediction task.  
+According to this measurement, predicted votes distribution histogram which is very different form the true histogram, will be "far away" (in terms of Euclidean distance) from the true votes distribution histogram. On the other hand, predicted votes distribution histogram which is very similar to the true histogram, will be very close to it. Thus, the model with the shortest Euclidean will be considered as the best model for votes division prediction task.
 
 \subsection{Most probable voters measurement}
-For the task of prediction of votes for each voter, we could use Average Accuracy. Based on 
-\href{https://medium.com/usf-msds/choosing-the-right-metric-for-evaluating-machine-learning-models-part-2-86d5649a5428}{Choosing the Right Metric for Evaluating Machine Learning Models}, average accuracy is one of the most commonly used metrics for multi-class classification tasks. On the other hand, in this task we should predict a probability of each voter to vote for each party, but not the exact label. That's why we decided to use other metrics for this task.
+In this task we should predict a probability of each voter to vote for each party, but not the exact label. That's why the first approach was to use custom metrics for this task.
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.5\textwidth]{report_pics/sets}
+\includegraphics[width=0.3\textwidth]{report_pics/sets}
 \caption{Intersection of predicted voters and actual voters of a party}
 \end{figure}
 Looking at the figure and denoting $P$-as predicted set, $T$-as true set, we can state the following:
@@ -252,6 +250,7 @@ $P_i \cap T_i$ - actual voters with transportation by party i \\
 \begin{gather*}   
    Score = \sum_{i=0}^{12} |P_i \cap T_i|-|P_i - T_i|-|T_i -P_i|  
 \end{gather*}
+Interestingly, weighted f1 score perfectly corresponds to our custom score, so it will be used as metrics in this prediction task.  
 
    
 
@@ -266,11 +265,11 @@ To visualize the prediction results on validation set we will use histogram of t
 \includegraphics[width=.4\textwidth]{Winner_party_plots/SVM_rbf_fig}
 \includegraphics[width=.4\textwidth]{Winner_party_plots/KNN_distance_fig}
 \includegraphics[width=.4\textwidth]{Winner_party_plots/Random_Forest_fig}
-\includegraphics[width=.4\textwidth]{Winner_party_plots/MLP[50]_fig}
+\includegraphics[width=.4\textwidth]{Winner_party_plots/MLP[95_95_95]_fig}
 \caption{Votes distribution}
 \end{figure}
 
-Looking at the plots we can say that 3 models out of 4, predicted the winner party correctly, while SVM and KNN did it with the highest level of certainty, i.e. the majority of the samples where classified according to the real tag majority in the train set. Infinity norm of the prediction histogram of KNN is slightly higher, thus this model is the best model for winner prediction task.
+Looking at the plots we can say that all models predicted the winner correctly, but the MLP model got the highest f1 score, thus it was selected automatically as the best model for this task.
 
 \newpage
 \subsection{Votes division}
@@ -281,26 +280,26 @@ To visualize the prediction results on validation set we will use histogram of t
 \includegraphics[width=.4\textwidth]{Division_prediction_plots/SVM_rbf_fig}\quad
 \includegraphics[width=.4\textwidth]{Division_prediction_plots/KNN_distance_fig}\quad
 \includegraphics[width=.4\textwidth]{Division_prediction_plots/Random_Forest_fig}
-\includegraphics[width=.4\textwidth]{Division_prediction_plots/MLP[50]_fig}
+\includegraphics[width=.4\textwidth]{Division_prediction_plots/MLP[95_95_95]_fig}
 \caption{Votes distribution}
 \end{figure}
 
-Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, SVM classifier achieved best performance on validation set with final score of 69, which is the best score among other classifiers. 
+Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, MLP classifier achieved best performance on validation set with final score of 18, which is the best score among other classifiers. 
 
 \newpage
 \subsection{Voters transportation}
-To visualize the prediction results on validation set we will use bar chart. Each color represents a set of one type, and the bar height, the size of the set. The grey color is a sets of "forgotten" voters, i.e. the voters who are willing to vote for a given party, but not been provided by a transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar is the voters which will vote and actually get a transportation. Grey and the red bars height effects negativelly on the score, while green bar effects positively.    
+To visualize the prediction results on validation set we will use bar chart. Each color represents a set of one type, and the bar height, the size of the set. The grey color is a sets of "forgotten" voters, i.e. the voters who are willing to vote for a given party, but not been provided by a transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar is the voters which will vote and actually get a transportation. Grey and the red bars height effects negatively on the score, while green bar effects positively.    
 \begin{figure}[h]
 \centering
 \includegraphics[width=.4\linewidth]{Vote_prediction_plots/SVM_rbf_fig.png}
 \includegraphics[width=.4\linewidth]{Vote_prediction_plots/KNN_distance_fig}
 \includegraphics[width=.4\linewidth]{Vote_prediction_plots/Random_Forest_fig}
-\includegraphics[width=.4\linewidth]{Vote_prediction_plots/MLP[50]_fig}
+\includegraphics[width=.4\linewidth]{Vote_prediction_plots/MLP[95_95_95]_fig}
 \caption{Models performance for transportation task}
 \label{fig:test}
 \end{figure}
 
-As we can see on the plots, KNN has very low negative performance score, which means according to it's probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who doesn't want to vote for them. On the other hand, MLP was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. It's important to mention that the probability threshold we used is $0.5$, i.e. the person added to the party's list only if he will vote to this party with probability higher than $0.5$. Our implementation provides the functionality the set the probability threshold, so the best model for this task depends on this parameter and selected automatically. 
+As we can see on the plots, Random Forest has very low performance score, which means according to it's probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who doesn't want to vote for them. On the other hand, MLP was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. It's important to mention that the probability threshold we used to visualization is $0.5$, i.e. the person added to the party's list only if he will vote to this party with probability higher than $0.5$. Our implementation provides the functionality the set the probability threshold which will maybe change the list of predicted votes, but not change the model, as it's been selected according to f1 score. 
 
 
 \newpage
@@ -308,34 +307,34 @@ As we can see on the plots, KNN has very low negative performance score, which m
 In this section we provide the final answers for the first two prediction tasks and a confusion matrix of the vote prediction of each voter in a test set. First of all the best models are:
 
 \begin{verbatim}
-best model for winner prediction is  KNN_distance
-best model for transportation is  MLP[50]
-best model for vote division is  SVM_rbf
+best model for transportation is  MLP[95_95_95]
+best model for winner prediction is  MLP[95_95_95]
+best model for vote division is  MLP[95_95_95]
 \end{verbatim}
 
 \subsection{Which party will win}
 As described previously, the best model for this task is SVM with RBF kernel, and its final prediction was:
 \begin{verbatim}
-KNN_distance  prediction -  Purples  party will win the elections.
+MLP[95_95_95]  prediction -  Purples  party will win the elections.
 \end{verbatim}
 
 \subsection{Votes division}
 As described previously, the best model for this task is Random Forest, and its final prediction was:
 \begin{verbatim}
-SVM_rbf  prediction - Vote division:
-Party  Blues : 5.3 %
-Party  Browns : 8.4 %
-Party  Greens : 4.7 %
-Party  Greys : 6.7 %
-Party  Khakis : 21.5 %
-Party  Oranges : 5.8 %
-Party  Pinks : 3.9 %
-Party  Purples : 22.7 %
-Party  Reds : 5.3 %
+MLP[95_95_95]  prediction - Vote division:
+Party  Blues : 5.6 %
+Party  Browns : 9.0 %
+Party  Greens : 5.5 %
+Party  Greys : 4.5 %
+Party  Khakis : 21.0 %
+Party  Oranges : 2.9 %
+Party  Pinks : 3.2 %
+Party  Purples : 25.0 %
+Party  Reds : 5.1 %
 Party  Turquoises : 5.3 %
-Party  Violets : 2.8 %
-Party  Whites : 3.7 %
-Party  Yellows : 3.8 %
+Party  Violets : 3.3 %
+Party  Whites : 5.2 %
+Party  Yellows : 4.3 %
 \end{verbatim}
 
 \newpage
@@ -343,11 +342,11 @@ Party  Yellows : 3.8 %
 \begin{figure}[htp]
 \centering
 \includegraphics[width=\textwidth]{confusion_matrix/confusion_fig}
-\caption{Confusion matrix of Random Forest}
+\caption{Confusion matrix of MLP}
 \end{figure}
 
 \begin{verbatim}
-Model  Random_Forest  reached  25.53 % error.
+Model  MLP[95_95_95]  reached  6.4 % error.
 \end{verbatim}
 
 \newpage
@@ -359,115 +358,42 @@ We decided to create automatic model selection process in the same class $modelS
 \item Evaluate all candidate models on validation set and select all the models which predicted correctly the winner party. We see this task as the most important as it predicts who is the winner - the most important outcome of the elections.
 \item Evaluate all selected models on validation set to predict the most probable voters for the transportation task, and select the model which performed better than others according to metrics of this task. We see the transportation task as the second important task as a serious financial investment involved in it. Finally, the model with best performance selected as "one for all" model. 
 \end{enumerate}
-It's worth to mention that we don't evaluate the model on the validation set to get a score for the votes division task, as wee see this task least important. Moreover, as we can see from our previous results, a model with best transportation task score, actually handles very good the vote division task as well. Finally, the best for all model was:
-
-\begin{verbatim}
-Best one for all is  SVM_rbf
-\end{verbatim}
-
-\subsection{Final answers}
-\begin{enumerate}
-\item Winner party:
-	\begin{verbatim}
-	SVM_rbf  prediction -  Purples  party will win the elections.
-	\end{verbatim}
-\item Votes division:
-	\begin{verbatim}
-SVM_rbf  prediction - Vote division:
-Party  Blues : 5.5 %
-Party  Browns : 7.9 %
-Party  Greens : 5.5 %
-Party  Greys : 8.7 %
-Party  Khakis : 21.0 %
-Party  Oranges : 2.6 %
-Party  Pinks : 2.8 %
-Party  Purples : 26.1 %
-Party  Reds : 4.4 %
-Party  Turquoises : 5.0 %
-Party  Violets : 3.3 %
-Party  Whites : 3.3 %
-Party  Yellows : 3.9 %
-	\end{verbatim}
-\item Confusion matrix:
-	\begin{figure}[htp]
-	\centering
-	\includegraphics[width=.5\textwidth]{confusion_matrix/confusion_fig_one_for_all}
-	\caption{Confusion matrix of One for all model}
-	\end{figure}
-\item Test error:
-	\begin{verbatim}
-	Model  SVM_rbf  reached  27.47 % error
-	\end{verbatim}
-\end{enumerate}
+It's worth to mention that we don't evaluate the model on the validation set to get a score for the votes division task, as wee see this task least important. Moreover, as we can see from our previous results, a model with best transportation task score, actually handles very good the vote division task as well. Finally, the best for all model was MLP. As we saw in previous section, this model was selected for each prediction task independently, so the final results are exactly the same.  
 
 \subsection{Comparison}
-As we can see, in both cases we could correctly predict the winner party. The vote division is slightly different, but as we mentioned previously we are not interested in high quality results in this task. The test Error is higher as the models were scored by other metrics rather than error or accuracy. The main advantage of one for all method is simplicity of implementation.
+As we can see, in both cases we achieved same results as the same model was selected. The main advantage of one for all method is simplicity of implementation.
 
 \newpage
 \section{Feature manipulation}
 In this section we will describe our implementation of bonus part of feature manipulation which will cause other party to win. To complete this task we've created a class $featureManipulator$ which automatically finds features which will cause other party to win. Firstly, we provides the class the best model for winner party prediction. Them, in iterative manner, Feature Manipulator decreases or increases one column of the validation or test data one by one, by a given constant $C$. In each iteration we start with relatively small values of $C$ and increase them gradually, until the model predicts another party as a winner. To visualize it we plot an histogram of original predictions, new predictions on altered data and true labels.   
 
 \begin{figure}[ht]
-		\centering
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_environmental_importance_increased}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_government_satisfaction_increased}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_education_importance_increased}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Number_of_valued_Kneset_members_increased}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Avg_Residancy_Altitude_increased}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Weighted_education_rank_increased}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Financial_set}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Healthcare_set}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Social_set}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Other_set}
-		\includegraphics[width=0.3\textwidth]{dramatic_feature/Is_Most_Important_Issue__Military_set}
+	\centering
+	\includegraphics[width=0.2\textwidth]{dramatic_feature/Avg_education_importance_increased}
+	\includegraphics[width=0.2\textwidth]{dramatic_feature/Avg_monthly_expense_on_pets_or_plants_increased}
+	\includegraphics[width=0.2\textwidth]{dramatic_feature/Weighted_education_rank_increased}	
+	\includegraphics[width=0.2\textwidth]{dramatic_feature/Yearly_ExpensesK_increased}					
 \end{figure}
 
-\newpage
 To summarize the results:
 
 \begin{enumerate}
 
-\item For Khakis, as the second most popular party, there are a lot of options to win the elections. Based on our approach we got following results. We will sort them from the smallest to the biggest value of manipulation.
-\begin{verbatim}
-Khakis:
-If  Avg_environmental_importance  will grow by  1.2, Khakis win
-If  Avg_education_importance  will grow by  1.2, Khakis win
-If  Number_of_valued_Kneset_members  will grow by  1.3, Khakis win
-If  Avg_Residancy_Altitude  will grow by  1.7, Khakis win
-If  Weighted_education_rank  will grow by  8.2, Khakis win
-If  Is_Most_Important_Issue_Financial will be important to everyone, Khakis win
-\end{verbatim}
+\item If Weighted education rank  will grow by  9.1 , that will cause  Browns  to win
 
-\item Browns will win if they make the voters care solely for Healthcare, and looks like this is the only option for them to win.  
-\begin{verbatim}
-Browns:
-If  Is_Most_Important_Issue_Healthcare will be important to everyone, Browns win
-\end{verbatim}
+\item If  Avg environmental importance  will grow by  5.8 , that will cause  Blues  to win
 
-\item Greys can win in two scenarios, if they make the voters care solely about Social issues or solely other issues. 
-\begin{verbatim}
-Greys:
-If  Is_Most_Important_Issue_Social will be important to everyone, Greys win
-If  Is_Most_Important_Issue_Other will be important to everyone, Greys  win
-\end{verbatim}
+\item If  Avg education importance  will grow by  9.4 , that will cause  Greens  to win
 
-\item Reds can win if they scare the people with foreign invasion, which will make everybody care solely about Military issues. 
-\begin{verbatim}
-Reds:
-If  Is_Most_Important_Issue_Military will be important to everyone, Reds win
-\end{verbatim}
+\item If  Avg monthly expense on pets or plants will grow by  11.3 , that will cause  Yellows  to win
 
-\item Turquoises can win if they rise the Average government satisfaction at least by 5.3.
-\begin{verbatim}
-Turquoises:
-If  Avg_government_satisfaction  will grow by  5.3, Turquoises
-\end{verbatim}
+\item If  Yearly Expenses K  will grow by  2.9 , that will cause  Khakis  to win
 
 \end{enumerate}
 
 \newpage
-\section{Discussion}
-\subsection{Comaring results of validation set vs test set}
+\section{D}
+\subsection{C}
 \subsection{A}
 \subsection{B}
 \subsection{C}

@@ -30,14 +30,14 @@ def main():
     # cv.tuneNForest(100)
     # cv.tuneDepthForest(50)
     # cv.tuneSplitForest()
-    # cv.tuneMLP()
+    # cv.tuneMLP(1000)
 
     models = [svm.SVC(kernel='rbf', C=20, gamma='auto', probability=True),
-              MLPClassifier([50], activation='relu', max_iter=1000),
+              MLPClassifier([95, 95, 95], activation='tanh', max_iter=1000),
               KNeighborsClassifier(n_neighbors=3, weights='distance'),
               RandomForestClassifier(n_estimators=50, max_depth=8, min_samples_split=0.01)]
     model_names = ['SVM_rbf',
-                    'MLP[50]',
+                    'MLP[95_95_95]',
                     'KNN_distance',
                     'Random_Forest']
 
@@ -46,11 +46,10 @@ def main():
                        id_test, x_test, y_test,
                        models, model_names, dict)
     sl.fit()
-    sl.score_transportation_f1()
-    # sl.score_accuracy()
-    # sl.save_votes_to_csv()
-    # sl.score_who_win(graphic=True)
+    # sl.score_transportation_f1()
     # sl.score_transportation_prediction(graphic=True)
+    # sl.save_votes_to_csv()
+    sl.score_who_win(graphic=True)
     # sl.score_division_prediction(graphic=True)
 
     # One for each
@@ -69,10 +68,10 @@ def main():
     # sl.get_test_error(True)
 
     # Features manipulation
-    # model = sl.get_best_winner_prediction_model()
-    # feature_names = dp.get_feature_names()
-    # fml = featureManipulator(model, x_test, y_test, feature_names, party_dict=dict)
-    # fml.find_continuous_dramatic_feature()
+    model = sl.get_best_winner_prediction_model()
+    feature_names = dp.get_feature_names()
+    fml = featureManipulator(model, x_test, y_test, feature_names, party_dict=dict)
+    fml.find_continuous_dramatic_feature()
     # fml.find_binary_dramatic_feature()
 
 if __name__ == "__main__":
