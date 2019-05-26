@@ -5,6 +5,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 from sklearn.base import clone
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.datasets import make_classification
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,19 +31,32 @@ class Adaline:
         self.weights_list = None
         self.epochs = epochs
 
-    def fit(self, x_data, y_data):
+    def fit(self, x_data, y_data, iterative=False):
         # create a list of weights matrices.
         self.weights_list = self._generate_weights(x_data)
-        y_data_list = self._generate_labels(y_data)
+        y_data_list = self._generate_labels(y_data, self.num_classes)
 
-        for epoch in range(self.epochs):
-            # for each matrix, perform gradient descent with LMS loss
-            for i in range(self.num_classes):
-                y = y_data_list[i]
-                self._fit_binary(x_data, y, i)
-            # As a result we get num_classes weights matrices.
+        if iterative:
+            for epoch in range(self.epochs):
+                # for each matrix, perform gradient descent with LMS loss
+                for i in range(self.num_classes):
+                    y = y_data_list[i]
+                    self._fit_binary_sgd(x_data, y, i)
+                # As a result we get num_classes weights matrices.
+        else:
+            for class_idx in range(self.num_classes):
+                y = y_data_list[class_idx]
+                # Analytic solution
+                # w = XTX^-1XTY
+                # Using pseudo inverse
+                temp = np.matmul(np.transpose(x_data), x_data)
+                try:
+                    temp = np.matmul(np.linalg.inv(temp), np.transpose(x_data))
+                except:
+                    temp = np.matmul(np.linalg.pinv(temp), np.transpose(x_data))
+                self.weights_list[class_idx] = np.matmul(temp, y)
 
-    def _fit_binary(self, x_data, y_data, class_idx):
+    def _fit_binary_sgd(self, x_data, y_data, class_idx):
         # Fits one weight, one class
         # SGD on whole x data
         for sample_idx in range(x_data.shape[0]):
@@ -81,9 +95,9 @@ class Adaline:
         return weights
 
 
-    def _generate_labels(self, y_data):
+    def _generate_labels(self, y_data, num_classes):
         label_list = []
-        for cls in set(y_data):
+        for cls in range(num_classes):
             new_y_data = np.zeros_like(y_data)
             for id, val in enumerate(y_data):
                 if val == cls:
@@ -91,25 +105,17 @@ class Adaline:
             label_list.append(new_y_data)
         return label_list
 
-
-def main():
-
-
-
+def eval_dataset(dataset, num_classes, path, title='title'):
     heldout = [0.95, 0.90, 0.75, 0.50, 0.01]
     rounds = 20
-    digits = datasets.load_digits()
-    X, y = digits.data, digits.target
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    ada = Adaline(len(set(y)))
-    ada.fit(X_train, y_train)
-    print("acc = ", np.mean(ada.predict(X_test) == y_test))
+    try:
+        X, y = dataset.data, dataset.target
+    except:
+        X, y = dataset
 
     classifiers = [
-        ("Perceptron", Perceptron(tol=1e-3)),
-        ("One vs all", OneVsRestClassifier(Perceptron(tol=1e-3), n_jobs=None)),
-        ("LMS", Adaline(len(set(y))))
+        ("Perceptron (One vs all)", OneVsRestClassifier(Perceptron(tol=1e-3), n_jobs=None)),
+        ("LMS (One vs all)", Adaline(num_classes))
     ]
 
     xx = 1. - np.array(heldout)
@@ -132,7 +138,68 @@ def main():
     plt.legend(loc="upper right")
     plt.xlabel("Proportion train")
     plt.ylabel("Test Error Rate")
+    plt.title(title)
+    fig = plt.gcf()
+    fig.savefig(path, bbox_inches='tight')
     plt.show()
+
+def main():
+    # eval_dataset(datasets.load_iris(), 3,
+    #              path='weirdo_hoff_plots\\iris.png',
+    #              title='Iris dataset results')
+    # eval_dataset(datasets.load_digits(), 10,
+    #              path='weirdo_hoff_plots\\digits.png',
+    #              title='Digits dataset results')
+
+    dataset1 = make_classification(n_samples=500,
+                                   n_features=2,
+                                   n_informative=2,
+                                   n_redundant=0,
+                                   n_repeated=0,
+                                   n_classes=2,
+                                   n_clusters_per_class=1,
+                                   weights=None,
+                                   flip_y=0.01,
+                                   class_sep=1.0,
+                                   hypercube=True,
+                                   shift=0.0,
+                                   scale=1.0,
+                                   shuffle=True,
+                                   random_state=None)
+    dataset_name = 'dataset6'
+
+    eval_dataset(dataset1, 2,
+                  path='weirdo_hoff_plots\\'+dataset_name+'_results.png',
+                  title=dataset_name+' results')
+
+    X, y = dataset1
+
+
+
+    first_class_x1 = []
+    first_class_x2 = []
+    second_class_x1 = []
+    second_class_x2 = []
+    for sample, label in zip(X, y):
+        if label == 0:
+            first_class_x1.append(sample[0])
+            first_class_x2.append(sample[1])
+        else:
+            second_class_x1.append(sample[0])
+            second_class_x2.append(sample[1])
+    plt.scatter(first_class_x1, first_class_x2, label='class A')
+    plt.scatter(second_class_x1, second_class_x2, label='class B')
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.title(dataset_name)
+    plt.legend()
+    fig = plt.gcf()
+    fig.savefig('weirdo_hoff_plots\\'+dataset_name+'.png', bbox_inches='tight')
+    plt.show()
+
+
+
+
 
 if __name__ == "__main__":
     main()
