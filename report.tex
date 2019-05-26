@@ -16,6 +16,12 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{adjustbox}
+\usepackage{listings}
+
+\lstset{language=python}
 
 \hypersetup{
     colorlinks=true,
@@ -89,8 +95,97 @@ As it stated in the assignment document -  "one size doesn't fit all", i.e. diff
 \subsection{No one-hot representation of Categorical data}
 During the work on this submission, we noticed a negative effect of one-hot representation of categorical data on all models performance. Thus we have decided not to convert the categorical data to one-hot representation.
 
+\section{Data Preparation}
+\subsection{First adjustments}
+At the end of excercise 2 we had the following general scheme, if we ignore the steps used for feature selection:
+1. Delete illogical values (i.e. negative average monthly expenses)
+2. Fill missing values via linear regression with another highest correlated features. We impute from the highest to lowest correlated feature in descending order, and we stop when correlation drops below 0.8.
+3. For each feature, delete values that are three standard deviations from the norm (delete outliers)
+4. Again fill missing values via linear regression
+5. Again delete illogical values
+6. Delete useless features - see below
+7. Fill the remaining missing values as the mean of that feature
+8. Categorical features are filled by the same distribution as the rest of the values in this categorical feature.
 
-\newpage
+The imputation is obviously done on all three sets. All statistics (mean, standard deviation, distribution) were computed on the train set only.
+
+As can be seen, for our process we use only the target features
+and features that are highly ($\geq 0.8$) correlated with them. In this exercise we know what the target features are.\\
+
+\begin{adjustbox}{max width=\linewidth}
+\begin{lstlisting}
+NUMERIC_TARGET_FEATURES = ['Avg_environmental_importance', 'Avg_government_satisfaction',
+                           'Avg_education_importance', 'Avg_monthly_expense_on_pets_or_plants',
+                           'Avg_Residancy_Altitude', 'Number_of_valued_Kneset_members',
+                           'Yearly_ExpensesK', 'Weighted_education_rank']
+CATEGORIC_TARGET_FEATURES = ['Most_Important_Issue']
+\end{lstlisting}
+\end{adjustbox}\\\\
+
+
+We have identified all the other features that have a high correlation with them. They are used in the linear regression imputation steps:\\
+
+\begin{adjustbox}{max width=\linewidth}
+\begin{lstlisting}
+NUMERIC_USEFUL_FEATURES = ['Avg_Residancy_Altitude', 'Avg_Satisfaction_with_previous_vote',
+                           'Avg_education_importance', 'Avg_environmental_importance',
+                           'Avg_government_satisfaction', 'Avg_monthly_expense_on_pets_or_plants',
+                           'Avg_monthly_expense_when_under_age_21', 'Avg_monthly_household_cost',
+                           'Avg_monthly_income_all_years', 'Avg_size_per_room', 'Last_school_grades',
+                           'Number_of_valued_Kneset_members', 'Phone_minutes_10_years',
+                           'Political_interest_Total_Score', 'Weighted_education_rank',
+                           'Yearly_ExpensesK']
+\end{lstlisting}
+\end{adjustbox}\\
+
+This list, together with our categorical feature 'Most\_Important\_Issue' and the label 'Vote' are all the features that are used in the data preparation process. We have discarded every other feature as the very first step, to speed up the process as much as possible.\\
+For the scaling step we had to find the distributions of the features we haven't chosen in part 2. Again, we divided them to two groups - gaussian features, which will be z-score normalized, and non-gaussian features, which will be min-max normalized to $[1, -1]$. Features that were not close to uniform distribution were grouped with the gaussian features. After drawing the distributions we have arrived at the following:\\
+
+\begin{adjustbox}{max width=\linewidth}
+\begin{lstlisting}
+    gaussian_features = ['Avg_Residancy_Altitude', 'Avg_education_importance', 'Avg_environmental_importance',
+                         'Avg_government_satisfaction', 'Number_of_valued_Kneset_members']
+    non_gaussian_features = ['Avg_monthly_expense_on_pets_or_plants', 'Weighted_education_rank',
+                             'Yearly_ExpensesK']
+\end{lstlisting}
+\end{adjustbox}\\
+
+\subsection{Using the validation set}
+After checking the model outputs of the later parts of this exercise, we have found we have much inferior results between the training set (accuracy $>90\%$) and the validation and train sets (accuracy $\approx 75\%$). 
+After discussing with the TA in charge of the course and talking to colleagues in class, we realized this behaviour is odd. In an attempt to fix it we decided to use the validation data in all parts of our pre-processing, so we can have a more stable statistical confidence.\\
+We used the training sets for the missing values imputation and the data transformation. In the missing value steps, we have used the validation set for constructing the linear regression model to impute missing values. We used the validation set to determine the standard deviation and mean before dropping outliers. We have used the validation set for determining the distribution for the categorical feature. When scaling, we have used the validation set for finding the minimum, maximum, mean and standard deviation of each feature. We expect that at the accuracy dropoff, at least between the train and validation sets will be much smaller.
+
+\subsection{Categorical feature transformation}
+We have a single categorical feature 'Most\_Important\_Issue'. Previously we have transformed it with one hit bit transformation. We found out that when we skip this transformation and just number the different categorical values in some arbitrary order and assign ascending integers (from 0) to each category, we get higher prediction accuracy.
+
+\section{Implementing feedback on Homework 2}
+It was roughly at this stage when we got the feedback on HW2. We'll answer the questions from the feedback and implement the suggested changes.
+\subsection{Data separation}
+We have splitted the data to 70% for the train set, 15% for the validation set and 15% for the test set.
+We use stratified split by the 'Vote' label between all three sets.
+\subsection{Noise, Outliers and Imputation}
+As suggested, we'll use a correlation cut-off of 0.93. We will only build a linear regression model for features with correlation $\geq 0.93$ in absolute value. This means we can discard even more features in our very initial step. The remaining correlated features are:\\
+
+\begin{adjustbox}{max width=\linewidth}
+\begin{lstlisting}
+CORRELATED_NUMERIC_FEATURES = ['Avg_Satisfaction_with_previous_vote',
+                               'Avg_monthly_expense_when_under_age_21', 'Avg_monthly_household_cost',
+                               'Avg_size_per_room', 'Phone_minutes_10_years']
+\end{lstlisting}
+\end{adjustbox}\\
+\\
+
+We now delete values that are three standard deviations or more from the mean of the feature only from the features that are gaussian.
+
+\subsection{Fill missing categrical features}
+Previously we have just sampled from the same distribution as we have seen on the train and validation sets. As suggested, we are using a classifier to try and predict the missing values. The classifier we chose is a K Nearest Neighbours classifier. We chose the number of neighbours to be 10.\\
+We also had to change the order of our actions. The KNN model is sensitiveto data sclaing and normalization. As such out new order of actions is:
+\begin{enumerate}
+\item Fill missing numeric values
+\item Scale and normalize numeric values
+\item Fill categoric values
+\end{enumerate}
+
 \section{Candidate models}
 In this section we discuss the candidate models which were selected for our experiments. For the task of most probable voters, we need to predict probabilities, but not the exact tag, so we want to use models which can provide this functionality. Based on post in \href{https://www.researchgate.net/post/What_are_the_best_supervised_classifiers_to_classify_the_problem_of_multiclass_classification}{www.researchgate.net} stating that SVM, KNN and Random Forest can successfully handle a problem of multi-class classification, we decided to choose those two models in addition to a MLP, resulting a total of four candidate models.
 
@@ -392,15 +487,17 @@ To summarize the results:
 \end{enumerate}
 
 \newpage
-\section{D}
-\subsection{C}
-\subsection{A}
-\subsection{B}
-\subsection{C}
+\section{Widrow-Hoff}
+In this section we implement Adaline algorithm. Firstly we implemented iterative Adaline which worked properly but was extremely slow. Thus the best option is an analytic solution which we implemented as well. Then we implemented a 1-vs-all technique in $Adaline$ class for multiclass classification. i.e. for Iris dataset we trained automatically 3 Adaline binary classifiers, and 10 classifiers for Digits dataset.
+\subsection{Results on Iris and Digits datasets}
+We used the code from "Comparing various online solvers" example to generate the plots. It's worth to mention that those plot were generated using our $Adaline$ class which includes a proper number of Adaline classifiers, depending on number of classes, which makes it a multiclass classifier. 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.4\textwidth]{weirdo_hoff_plots/iris}
+	\includegraphics[width=0.4\textwidth]{weirdo_hoff_plots/digits}			
+\end{figure}
 
-\begin{enumerate}
-	\item one
-	\item two
-\end{enumerate}
+\subsection{Results on generated datasets}
+\subsection{Discussion}
 
 \end{document}
