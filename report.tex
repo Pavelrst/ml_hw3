@@ -79,21 +79,13 @@
 \maketitle
 
 
-\begin{abstract}
-Abstract...
-\end{abstract}
-
 \newpage
 \section{Process and significant decisions}
-In this paragraph we will describe the process of our work.
 \subsection{Automatic model selection}
 As a part of non-mandatory assignment, we will implement the automatic model selection as an integral part of the mandatory assignment. For such task, we encapsulated all model evaluation scripts in one class called $modelSelector()$ (in short - Selector). As we have 3 prediction tasks, the Selector will train all candidate models on training set, and test all of them on the validation set. The difference between the tasks is that different performance metrics will be used. At the end of validation, each model will get a score for it's performance for each prediction task.
 
 \subsection{Different models for different tasks}
 As it stated in the assignment document -  "one size doesn't fit all", i.e. different models can be the best models for each task. To handle this, we decided to include in our $modelSelector()$ class an option to select best model for each task. At the time of writing this paragraph we still don't know if the same model will be selected for all tasks or not.
-
-\subsection{No one-hot representation of Categorical data}
-During the work on this submission, we noticed a negative effect of one-hot representation of categorical data on all models performance. Thus we have decided not to convert the categorical data to one-hot representation.
 
 \section{Data Preparation}
 \subsection{First adjustments}
@@ -186,41 +178,15 @@ We also had to change the order of our actions. The KNN model is sensitiveto dat
 \item Fill categoric values
 \end{enumerate}
 
+\newpage
 \section{Candidate models}
 In this section we discuss the candidate models which were selected for our experiments. For the task of most probable voters, we need to predict probabilities, but not the exact tag, so we want to use models which can provide this functionality. Based on post in \href{https://www.researchgate.net/post/What_are_the_best_supervised_classifiers_to_classify_the_problem_of_multiclass_classification}{www.researchgate.net} stating that SVM, KNN and Random Forest can successfully handle a problem of multi-class classification, we decided to choose those two models in addition to a MLP, resulting a total of four candidate models.
 
 \subsection{Hyper parameters tuning with k-fold cross validation}
-In order to select the best model candidates, we need to perform 3-fold cross validation using training set only. The cross validation process for all models implemented in $crossValidator$ class. In all our cross-validation experiments we used the $accuracy$ as model performance measurement. Although its not the same measurement we selected for each task, it's still more strict requirement than all other metric we will describe in next sections.
+In order to select the best model candidates, we need to perform 5-fold cross validation using training set only. The cross validation process for all models implemented in $crossValidator$ class. In all our cross-validation experiments we used the $f1_score$ as model performance measurement. Although its not the same measurement we selected for each task, it's still more strict requirement than all other metric we will describe in next sections.
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.5\textwidth]{report_pics/frog}
-\caption{A sad fact about hyper-parameters tuning}
-\end{figure}
-
-\newpage
-\subsection{Support vector machine}
-Support vector machines are a set of supervised learning methods used for classification, regression and outliers detection. Main advantages of support vector machines are: Effective in high dimensional spaces, Still effective in cases where number of dimensions is greater than the number of samples. Based on a post in  \href{https://www.researchgate.net/post/Is_it_necessary_to_choose_kernels_in_SVM_according_to_application}{www.researchgate.net} the most important parameters for SVM are the kernel and the C parameter. While the kernel determines the shape of separating hyperplane, the C parameter responsible for overfitting capabilities of the model. A larger C makes the model more complex and lowers its bias, hence it have higher chance of overfitting. A low C gives a model with low variance and high bias. As we could not achieve convergence with linear kernel, we will use SVM with RBF kernel.
-
-\begin{figure}[h]
-\centering
-\begin{subfigure}{.4\textwidth}
-  \centering
-  \includegraphics[width=.7\linewidth]{report_pics/SVM_RBF}
-  \caption{RBF kernel}
-  \label{fig:sub1}
-\end{subfigure}%
-\begin{subfigure}{.4\textwidth}
-  \centering
-  \includegraphics[width=.7\linewidth]{report_pics/SVM_linear}
-  \caption{Linear kernel}
-  \label{fig:sub2}
-\end{subfigure}
-\caption{SVM kernel types}
-\label{fig:test}
-\end{figure}
-
-To select the right value for C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and got a plot. Then we repeated the process with smaller range and smaller steps for fine tuning. As we can see from the plots, the best accuracy achieved with C = 20 after which we can't see any improvement, thus this value with be selected for SVM model.
+\subsection{Support vector machine hyper-parameters tuning}
+Based on a post in  \href{https://www.researchgate.net/post/Is_it_necessary_to_choose_kernels_in_SVM_according_to_application}{www.researchgate.net} the most important parameters for SVM are the kernel and the C parameter. Kernel determines the shape of separating hyper-plane and C parameter responsible for its complexity. A larger C makes the model more complex and lowers its bias, hence it have higher chance of over-fitting. A low C gives a model with low variance and high bias. As we could not achieve convergence with linear kernel, we will use SVM with RBF kernel. To select the right value for C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and got a plot. Then we repeated the process with smaller range and smaller steps for fine tuning. As we can see from the plots, the best accuracy achieved with C = 20 after which we can't see any improvement, thus this value with be selected for SVM model.
 
 \begin{figure}[h]
 \centering
@@ -239,30 +205,22 @@ To select the right value for C hyper parameter we used the k-fold cross validat
 \caption{C hyper parameter tuning}
 \label{fig:test}
 \end{figure}
- 
-\newpage
+
+
 \subsection{K nearest neighbours}
-Neighbors-based classification is a type of instance-based learning or non-generalizing learning: it does not attempt to construct a general internal model, but simply stores instances of the training data. Classification is computed from a simple majority vote of the nearest neighbors of each point. Under some circumstances, it is better to weight the neighbours such that nearer neighbours contribute more to the fit i.e. proportional to the inverse of the distance from the query point. As we would like to experiment with both options, we will create two KNN classifiers with two different distance functions and test their performance.
+While using KNN, under some circumstances, it is better to weight the neighbors such that nearer neighbors contribute more to the fit i.e. proportional to the inverse of the distance from the query point. As we would like to experiment with both options, we will create two KNN classifiers with two different distance functions and test their performance. To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models. We ended up with k = 3 after which the accuracy starts to decease. As we clearly can see from the plot, the KNN with distance weights performed better with all values of k.
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.3\textwidth]{report_pics/knn}
-\caption{Classification depends on weight function}
-\end{figure}
-To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models, with different weight types, as shown on below. We ended up with k = 3 after which the accuracy starts to decease. As we clearly can see from the plot, the KNN with distance weights performed better with all values of k.
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.6\textwidth]{Cross_valid_plots/k_hyper_fig}
+\includegraphics[width=0.4\textwidth]{Cross_valid_plots/k_hyper_fig}
 \caption{k hyper parameter tuning}
 \end{figure}
 
-
-\newpage
 \subsection{Random Forest}
-A random forest is a meta estimator that fits a number of decision tree classifiers on various sub-samples of the dataset and uses averaging to improve the predictive accuracy and control over-fitting. According to \href{https://medium.com/all-things-ai/in-depth-parameter-tuning-for-random-forest-d67bb7e920d}{medium.com post} the most important parameters of this classifier are:
+A random forest fits a number of decision tree classifiers on various sub-samples of the dataset and uses averaging to improve the predictive accuracy and control over-fitting. According to \href{https://medium.com/all-things-ai/in-depth-parameter-tuning-for-random-forest-d67bb7e920d}{medium.com post} the most important parameters of this classifier are:
 \begin{enumerate}
-	\item Number of trees - Usually the higher the number of trees the better to learn the data. However, adding a lot of trees can slow down the training process. Based on the experiments conducted we decided to go with 50 trees as for bigger values we didn't noticed any improvement.
-	\item Maximum depth - represents the depth of each tree in the forest. The deeper the tree, the more splits it has and it captures more information about the data. The downside of a deeper tree, that it tends to overfit. Based on the plots we decided to set the depth to 8 as bigger values does not increase accuracy.
-	\item Minimum samples split - represents the minimum number of samples required to split an internal node. Large numbers will cause the nodes of the trees not to split at all disabling it's ability to learn. As we can see on the plot, the best accuracy was achieved with the smallest value of 0.01 which means minimum 70 samples for a split.
+	\item Number of trees - Higher the number of trees are better, but adding a lot of trees can slow down the training process. Based on the plots, 50 trees are enough as bigger values doesn't improve the score.
+	\item Maximum depth - represents the depth of each tree in the forest. The downside of a deeper tree, that it tends to overfit. Based on the plots we decided to set the depth to 8 as bigger values does not increase accuracy.
+	\item Minimum samples split - represents the minimum number of samples required to split an internal node. As we can see on the plot, the best accuracy was achieved with the smallest value of 0.01 which means minimum 70 samples for a split.
 \end{enumerate}
 
 \begin{figure}[h]
@@ -295,28 +253,25 @@ We find other parameters less important (and less intuitive), thus we will use t
 \subsection{Multi-layer perceptron}
 Multi-layer Perceptron classifier. This model optimizes the log-loss function using LBFGS or stochastic gradient descent. In this section we discuss the most important parameters of MLP and the values we have chosen. Our decisions mostly based on the post in \href{https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw}{stats.stackexchange.com}.
 \begin{enumerate}
-	\item Number of hidden layers - There is a consensus that the situations in which performance improves with a second (or third, etc.) hidden layer are very few. One hidden layer is sufficient for the large majority of problems. Based on this statement we decided to test three options in the cross-validation process: 1, 2 and 3 hidden layers.
+	\item Number of hidden layers - There is a consensus that one hidden layer is sufficient for the large majority of problems. Based on this statement we decided to test three options in the cross-validation process: 1, 2 and 3 hidden layers.
 	\item Hidden layer size - There is rule of thumb that helps for supervised learning problems. The upper bound on the number of hidden neurons that will not result in over-fitting is:
 \begin{gather*}
 N_h = \dfrac{N_s}{\alpha * (N_i + N_o)}
 \end{gather*}
-while $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ 
-causing upper bound of 166 neurons in hidden layer. Thus, during cross validation we will test numbers in this range.
-	\item Activation function - we decided to use the default option which is ReLU.
+while $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ causing upper bound of 166 neurons in hidden layer. Thus, during cross validation we will test numbers in this range.
+	\item Activation function - we will test two options: ReLU and Tanh.
 \end{enumerate}
-
-We decided to leave other parameters at their default values as the problem of selecting the optimal neural network model is complex by itself and not should be covered in this submission, resulting 2 models trained and tested with different values of hidden layer size. As we can see from the plot, t.  
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.5\textwidth]{Cross_valid_plots/mlp_h_fig}
+\includegraphics[width=0.4\textwidth]{Cross_valid_plots/mlp_h_fig}
 \caption{MLP cross validation results}
 \end{figure}
 
 \newpage
 \section{Performance measurements}
 \subsection{Majority votes measurement}
-For the task of prediction which party will win the majority of votes we propose to use the most simple measurement that comes to mind - "binary score": if the majority of predicted tags are from the same class as in validation set, the model score is 1. Unfortunately this method can give us multiple models which can predict the winner party, i.e. it doesn't choose the best model for this task, which means the binary measurement we chose is not good enough as it can't provide us a relative "goodness" of the models which predicted correctly the winner party. To make the method more selective we decided to use f1 score as secondary measurement.
+For the task of prediction which party will win the majority of votes we propose to use the most simple measurement that comes to mind - "binary score": if the majority of predicted tags are from the same class as in validation set, the model score is 1. This method can give us multiple models which can predict the winner party. To make the method more selective we decided to use f1 score as secondary measurement.
 
 \subsection{Votes division measurement}
 For the task of prediction of votes division we want is to predict correctly the division of the total votes (in test set) between the parties, but not a vote of each person. In other words, we want to compare a histogram of predicted votes to the histogram of true votes in the test set, thus the metrics we use is an Euclidean distance between two histograms:
@@ -326,34 +281,23 @@ D = \sqrt[2]{\sum_{i=0}^{12} (histPredicted_i - histTrue_i)^2}
 According to this measurement, predicted votes distribution histogram which is very different form the true histogram, will be "far away" (in terms of Euclidean distance) from the true votes distribution histogram. On the other hand, predicted votes distribution histogram which is very similar to the true histogram, will be very close to it. Thus, the model with the shortest Euclidean will be considered as the best model for votes division prediction task.
 
 \subsection{Most probable voters measurement}
-In this task we should predict a probability of each voter to vote for each party, but not the exact label. That's why the first approach was to use custom metrics for this task.
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.3\textwidth]{report_pics/sets}
-\caption{Intersection of predicted voters and actual voters of a party}
-\end{figure}
-Looking at the figure and denoting $P$-as predicted set, $T$-as true set, we can state the following:
+In this task we should predict a probability of each voter to vote for each party, but not the exact label. That's why the first approach was to use custom metrics for this task. Denoting $P_i$ as set of predicted voters whose probably to vote $i$ party is above $threshold$, $T_i$ as true set of voters for $i$ party, we can state the following:
 \begin{enumerate}
-	\item $P \cap T$ - i.e. the set intersection is the actual voters which will be provided with transportation. Generally speaking, big intersection is good, thus it will increase the score.
-	\item $P-T$ - are mispredicted voters, which will not vote for the given party, but will get a free ride. Of course that, big $P-T$ is bad, thus it will decrease the score.
-	\item $T-P$ - are actual voters which will not get a transportation and maybe will not vote at all as a result. big $T-P$ is bad, thus it will decrease the score.
+	\item $P_i \cap T_i$ - i.e. the set intersection is the actual voters which will be provided with transportation. Generally speaking, big intersection is good, thus it will increase the score.
+	\item $P_i - T_i$ - are mispredicted voters, which will not vote for the given party, but will get a free ride. Of course that, big $P-T$ is bad, thus it will decrease the score.
+	\item $T_i - P_i$ - are actual voters which will not get a transportation and maybe will not vote at all as a result. big $T-P$ is bad, thus it will decrease the score.
 \end{enumerate} 
 Finally we ended up with following score calculation:\\
-$P_i \cap T_i$ - actual voters with transportation by party i \\
-   $P_i - T_i$ - mispredicted voters, which will not vote party i \\
-   $T_i -P_i$ - actual voters of party i, which will not get a transportation \\
 \begin{gather*}   
    Score = \sum_{i=0}^{12} |P_i \cap T_i|-|P_i - T_i|-|T_i -P_i|  
 \end{gather*}
-Interestingly, weighted f1 score perfectly corresponds to our custom score, so it will be used as metrics in this prediction task.  
+During our work on this prediction task we noticed that weighted f1 score perfectly corresponds to our custom score. As a result we decided to use weighted f1 score as a measurement for this prediction task. 
 
-   
 
-\newpage
 \section{Prediction results and chosen model}
 In this section we will discuss the results of each prediction task, the quality of the results according to the measurements and which model was selected for each prediction task.
 \subsection{Majority votes}
-To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels.
+To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels. According the plots, 3 models predicted the winner correctly, but the MLP model got the highest f1 score, thus it was selected automatically as the best model for this task.
 
 \begin{figure}[htp]
 \centering
@@ -361,14 +305,11 @@ To visualize the prediction results on validation set we will use histogram of t
 \includegraphics[width=.4\textwidth]{Winner_party_plots/KNN_distance_fig}
 \includegraphics[width=.4\textwidth]{Winner_party_plots/Random_Forest_fig}
 \includegraphics[width=.4\textwidth]{Winner_party_plots/MLP[95_95_95]_fig}
-\caption{Votes distribution}
 \end{figure}
-
-Looking at the plots we can say that all models predicted the winner correctly, but the MLP model got the highest f1 score, thus it was selected automatically as the best model for this task.
 
 \newpage
 \subsection{Votes division}
-To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels. According to the metrics we choose for Votes division task, we are interested in model which achieved the smallest Euclidean Distance between the histograms. 
+To visualize the prediction results on validation set we will use histogram of true labels of validation set and predicted labels. According to the metrics we choose for Votes division task, we are interested in model which achieved the smallest Euclidean Distance between the histograms. We can clearly see that model performance corresponds to the chosen metrics, as stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, MLP classifier achieved best performance on validation set with final score of 16, which is the best score among other classifiers. 
 
 \begin{figure}[htp]
 \centering
@@ -376,14 +317,12 @@ To visualize the prediction results on validation set we will use histogram of t
 \includegraphics[width=.4\textwidth]{Division_prediction_plots/KNN_distance_fig}\quad
 \includegraphics[width=.4\textwidth]{Division_prediction_plots/Random_Forest_fig}
 \includegraphics[width=.4\textwidth]{Division_prediction_plots/MLP[95_95_95]_fig}
-\caption{Votes distribution}
 \end{figure}
 
-Looking at the plot we can clearly see that model performance corresponds to the chosen metrics, i.e. the euclidean norm. As stated in previous sections, the most similar histograms have the smallest euclidean distance. In conclusion, MLP classifier achieved best performance on validation set with final score of 18, which is the best score among other classifiers. 
 
-\newpage
 \subsection{Voters transportation}
-To visualize the prediction results on validation set we will use bar chart. Each color represents a set of one type, and the bar height, the size of the set. The grey color is a sets of "forgotten" voters, i.e. the voters who are willing to vote for a given party, but not been provided by a transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar is the voters which will vote and actually get a transportation. Grey and the red bars height effects negatively on the score, while green bar effects positively.    
+To visualize the prediction results on validation set we will use bar chart. Each color represents a set of one type, and the bar height, the size of the set. The grey color is a sets of "forgotten" voters, i.e. the voters who are willing to vote for a given party, but not been provided by a transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar is the voters which will vote and actually get a transportation. Grey and the red bars height effects negatively on the score, while green bar effects positively. As we can see on the plots, Random Forest has very low performance score, which means according to it's probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who doesn't want to vote for them. On the other hand, MLP was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. It's important to mention that the probability threshold we used to visualization is $0.5$, i.e. the person added to the party's list only if he will vote to this party with probability higher than $0.5$. Our implementation provides the functionality the set the probability threshold which will maybe change the list of predicted votes, but not change the model, as it's been selected according to f1 score. 
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=.4\linewidth]{Vote_prediction_plots/SVM_rbf_fig.png}
@@ -394,27 +333,30 @@ To visualize the prediction results on validation set we will use bar chart. Eac
 \label{fig:test}
 \end{figure}
 
-As we can see on the plots, Random Forest has very low performance score, which means according to it's probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who doesn't want to vote for them. On the other hand, MLP was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. It's important to mention that the probability threshold we used to visualization is $0.5$, i.e. the person added to the party's list only if he will vote to this party with probability higher than $0.5$. Our implementation provides the functionality the set the probability threshold which will maybe change the list of predicted votes, but not change the model, as it's been selected according to f1 score. 
 
-
-\newpage
 \section{Final answers}
 In this section we provide the final answers for the first two prediction tasks and a confusion matrix of the vote prediction of each voter in a test set. First of all the best models are:
 
+\small
 \begin{verbatim}
 best model for transportation is  MLP[95_95_95]
 best model for winner prediction is  MLP[95_95_95]
 best model for vote division is  MLP[95_95_95]
 \end{verbatim}
+\normalsize
+
 
 \subsection{Which party will win}
 As described previously, the best model for this task is SVM with RBF kernel, and its final prediction was:
+\small
 \begin{verbatim}
 MLP[95_95_95]  prediction -  Purples  party will win the elections.
 \end{verbatim}
+\normalsize
 
 \subsection{Votes division}
 As described previously, the best model for this task is Random Forest, and its final prediction was:
+\small
 \begin{verbatim}
 MLP[95_95_95]  prediction - Vote division:
 Party  Blues : 5.6 %
@@ -431,12 +373,12 @@ Party  Violets : 3.3 %
 Party  Whites : 5.2 %
 Party  Yellows : 4.3 %
 \end{verbatim}
+\normalsize
 
-\newpage
 \subsection{Confusion matrix and test error}
 \begin{figure}[htp]
 \centering
-\includegraphics[width=\textwidth]{confusion_matrix/confusion_fig}
+\includegraphics[width=0.5\textwidth]{confusion_matrix/confusion_fig}
 \caption{Confusion matrix of MLP}
 \end{figure}
 
@@ -456,7 +398,11 @@ We decided to create automatic model selection process in the same class $modelS
 It's worth to mention that we don't evaluate the model on the validation set to get a score for the votes division task, as wee see this task least important. Moreover, as we can see from our previous results, a model with best transportation task score, actually handles very good the vote division task as well. Finally, the best for all model was MLP. As we saw in previous section, this model was selected for each prediction task independently, so the final results are exactly the same.  
 
 \subsection{Comparison}
-As we can see, in both cases we achieved same results as the same model was selected. The main advantage of one for all method is simplicity of implementation.
+As we can see, in both cases we achieved same results as the same model was selected.
+\begin{enumerate}
+\item The main advantage of one for all method is simplicity of implementation.
+\item In our case the same model was selected for all three tasks, which is not necessarily always true. If there are different models which are best for different task, we are giving up on performance while selecting only one model for each task.
+\end{enumerate}
 
 \newpage
 \section{Feature manipulation}
@@ -498,6 +444,22 @@ We used the code from "Comparing various online solvers" example to generate the
 \end{figure}
 
 \subsection{Results on generated datasets}
-\subsection{Discussion}
+We used the same technique to compare two models as in previous section. 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.4\textwidth]{weirdo_hoff_plots/dataset_lms}
+	\includegraphics[width=0.4\textwidth]{weirdo_hoff_plots/plot_lms}
+	\caption{LMS perform better on a noisy dataset}
+\end{figure}
+As we can see, LMS requires much smaller train set, i.e. converge faster in terms of number of samples. The dataset that we are chose is a linearly non-separatable dataset as a result of random noise. The explanation is that noisy samples don't affect much the separation line of LMS algorithm, as their portion of the dataset is rather small. On the other hand, they do affect the Perceptron, as if the datasets are not linearly separable, we can't be sure that it converge at all. 
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.4\textwidth]{weirdo_hoff_plots/dataset_perc}
+	\includegraphics[width=0.4\textwidth]{weirdo_hoff_plots/plot_perc}
+	\caption{Perceptron perform better on a well-separated datasets without noise}			
+\end{figure}
+In this example we have very compact clusters which are linearly separable, thus perceptron needs a small portion of the dataset to converge. 
+
 
 \end{document}
