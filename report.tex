@@ -65,11 +65,11 @@
 
 
 \begin{document}
-\title{\Large Introduction to machine learning - Homework 3}
+\title{\Huge Introduction to machine learning - Homework 3}
 
 \author{
   \textbf{Uri Kirstein}\\
-  777777777 \\ aaaaa@campus.technion.ac.il
+  311137095 \\ sukirstn@campus.technion.ac.il
   \\ \\
   \textbf{Pavel Rastopchin}\\
   321082026 \\ pavelr@campus.technion.ac.il
@@ -79,7 +79,7 @@
 \maketitle
 
 
-\newpage
+%\newpage
 \section{Process and significant decisions}
 \subsection{Automatic model selection}
 As a part of non-mandatory assignment, we will implement the automatic model selection as an integral part of the mandatory assignment. For such task, we encapsulated all model evaluation scripts in one class called $modelSelector()$ (in short - Selector). As we have 3 prediction tasks, the Selector will train all candidate models on training set, and test all of them on the validation set. The difference between the tasks is that different performance metrics will be used. At the end of validation, each model will get a score for it's performance for each prediction task.
@@ -89,20 +89,20 @@ As it stated in the assignment document -  "one size doesn't fit all", i.e. diff
 
 \section{Data Preparation}
 \subsection{First adjustments}
-At the end of excercise 2 we had the following general scheme, if we ignore the steps used for feature selection:
-1. Delete illogical values (i.e. negative average monthly expenses)
-2. Fill missing values via linear regression with another highest correlated features. We impute from the highest to lowest correlated feature in descending order, and we stop when correlation drops below 0.8.
-3. For each feature, delete values that are three standard deviations from the norm (delete outliers)
-4. Again fill missing values via linear regression
-5. Again delete illogical values
-6. Delete useless features - see below
-7. Fill the remaining missing values as the mean of that feature
-8. Categorical features are filled by the same distribution as the rest of the values in this categorical feature.
+At the end of exercise 2 the data preparation process was:
+\begin{enumerate}
+\item Delete illogical values (i.e. negative average monthly expenses)
+\item Fill missing values via linear regression with another highly correlated features. We impute from the highest to lowest correlated feature by absolute value in descending order, and we stop when correlation drops below 0.8.
+\item For each feature, delete values that are three standard deviations from the norm
+\item Again fill missing values via linear regression
+\item Again delete illogical values
+\item Delete features that were only used for linear regression
+\item Fill the remaining missing numerical values as the mean value of that feature
+\item Categorical features are filled by the same distribution as the rest of the values in this categorical feature.
+\end{enumerate}
 
-The imputation is obviously done on all three sets. All statistics (mean, standard deviation, distribution) were computed on the train set only.
-
-As can be seen, for our process we use only the target features
-and features that are highly ($\geq 0.8$) correlated with them. In this exercise we know what the target features are.\\
+Imputation is done on all three sets. All statistics were computed on the train set only. As can be seen, for our process we use only the target features
+and features that are highly ($\geq 0.8$) correlated with them.\\
 
 \begin{adjustbox}{max width=\linewidth}
 \begin{lstlisting}
@@ -115,7 +115,7 @@ CATEGORIC_TARGET_FEATURES = ['Most_Important_Issue']
 \end{adjustbox}\\\\
 
 
-We have identified all the other features that have a high correlation with them. They are used in the linear regression imputation steps:\\
+The highly correlated features are:\\
 
 \begin{adjustbox}{max width=\linewidth}
 \begin{lstlisting}
@@ -130,8 +130,8 @@ NUMERIC_USEFUL_FEATURES = ['Avg_Residancy_Altitude', 'Avg_Satisfaction_with_prev
 \end{lstlisting}
 \end{adjustbox}\\
 
-This list, together with our categorical feature 'Most\_Important\_Issue' and the label 'Vote' are all the features that are used in the data preparation process. We have discarded every other feature as the very first step, to speed up the process as much as possible.\\
-For the scaling step we had to find the distributions of the features we haven't chosen in part 2. Again, we divided them to two groups - gaussian features, which will be z-score normalized, and non-gaussian features, which will be min-max normalized to $[1, -1]$. Features that were not close to uniform distribution were grouped with the gaussian features. After drawing the distributions we have arrived at the following:\\
+This list, together with our categorical feature 'Most\_Important\_Issue' and the label 'Vote' are all the features used in the data preparation process. Every other feature was discarded at the very first step.\\
+For the scaling step we had to find the distributions of the features we haven't chosen in part 2. Again, we divided them to two groups - gaussian features, which will be z-score normalized, and non-gaussian features, which will be min-max normalized to $[1, -1]$. Features that were not close to uniform distribution were grouped with the gaussian features. By drawing the distributions we found that:\\
 
 \begin{adjustbox}{max width=\linewidth}
 \begin{lstlisting}
@@ -143,20 +143,13 @@ For the scaling step we had to find the distributions of the features we haven't
 \end{adjustbox}\\
 
 \subsection{Using the validation set}
-After checking the model outputs of the later parts of this exercise, we have found we have much inferior results between the training set (accuracy $>90\%$) and the validation and train sets (accuracy $\approx 75\%$). 
-After discussing with the TA in charge of the course and talking to colleagues in class, we realized this behaviour is odd. In an attempt to fix it we decided to use the validation data in all parts of our pre-processing, so we can have a more stable statistical confidence.\\
-We used the training sets for the missing values imputation and the data transformation. In the missing value steps, we have used the validation set for constructing the linear regression model to impute missing values. We used the validation set to determine the standard deviation and mean before dropping outliers. We have used the validation set for determining the distribution for the categorical feature. When scaling, we have used the validation set for finding the minimum, maximum, mean and standard deviation of each feature. We expect that at the accuracy dropoff, at least between the train and validation sets will be much smaller.
-
-\subsection{Categorical feature transformation}
-We have a single categorical feature 'Most\_Important\_Issue'. Previously we have transformed it with one hit bit transformation. We found out that when we skip this transformation and just number the different categorical values in some arbitrary order and assign ascending integers (from 0) to each category, we get higher prediction accuracy.
+After checking the model outputs of the latter parts of this exercise, we have found we have much inferior results between the training set (accuracy $>90\%$) and the validation and train sets (accuracy $\approx 75\%$). 
+After discussing with the TA in charge of the course and talking to colleagues in class, we realized this behaviour is odd. In an attempt to fix it we decided to use the validation data in all parts of our pre-processing, so we can have a more stable statistical confidence. We expect that the accuracy dropoff, at least between the train and validation sets, will be much smaller.
 
 \section{Implementing feedback on Homework 2}
-It was roughly at this stage when we got the feedback on HW2. We'll answer the questions from the feedback and implement the suggested changes.
-\subsection{Data separation}
-We have splitted the data to 70% for the train set, 15% for the validation set and 15% for the test set.
-We use stratified split by the 'Vote' label between all three sets.
+It was roughly at this stage when we got the feedback on HW2. We've implemented the suggested changes.
 \subsection{Noise, Outliers and Imputation}
-As suggested, we'll use a correlation cut-off of 0.93. We will only build a linear regression model for features with correlation $\geq 0.93$ in absolute value. This means we can discard even more features in our very initial step. The remaining correlated features are:\\
+As suggested, we will only build a linear regression model for features with $|correlation| \geq  0.93$. This means we can discard even more features in our very initial step. The remaining correlated features are:\\
 
 \begin{adjustbox}{max width=\linewidth}
 \begin{lstlisting}
@@ -170,23 +163,22 @@ CORRELATED_NUMERIC_FEATURES = ['Avg_Satisfaction_with_previous_vote',
 We now delete values that are three standard deviations or more from the mean of the feature only from the features that are gaussian.
 
 \subsection{Fill missing categrical features}
-Previously we have just sampled from the same distribution as we have seen on the train and validation sets. As suggested, we are using a classifier to try and predict the missing values. The classifier we chose is a K Nearest Neighbours classifier. We chose the number of neighbours to be 10.\\
-We also had to change the order of our actions. The KNN model is sensitiveto data sclaing and normalization. As such out new order of actions is:
+Previously we have just sampled labels from the same distribution of that feature as seen on the train and validation sets. As suggested, we are using a classifier to try and predict the missing values. The chosen classifier is a KNN classifier $K=10$.\\
+We had changed the order of actions, as the KNN model is sensitive to data scaling and normalization. The new order of actions is:
 \begin{enumerate}
 \item Fill missing numeric values
 \item Scale and normalize numeric values
 \item Fill categoric values
 \end{enumerate}
 
-\newpage
 \section{Candidate models}
-In this section we discuss the candidate models which were selected for our experiments. For the task of most probable voters, we need to predict probabilities, but not the exact tag, so we want to use models which can provide this functionality. Based on post in \href{https://www.researchgate.net/post/What_are_the_best_supervised_classifiers_to_classify_the_problem_of_multiclass_classification}{www.researchgate.net} stating that SVM, KNN and Random Forest can successfully handle a problem of multi-class classification, we decided to choose those two models in addition to a MLP, resulting a total of four candidate models.
+In this section we discuss the candidate models which were selected for our experiments. For the task of most probable voters, we need to predict probabilities, but not the exact tag, so we want to use models which can provide this functionality. Based on post in \href{https://www.researchgate.net/post/What_are_the_best_supervised_classifiers_to_classify_the_problem_of_multiclass_classification}{www.researchgate.net} stating that SVM, KNN and Random Forest can successfully handle a problem of multi-class classification, we decided to choose those two models in addition to MLP, resulting a total of four candidate models.
 
 \subsection{Hyper parameters tuning with k-fold cross validation}
-In order to select the best model candidates, we need to perform 5-fold cross validation using training set only. The cross validation process for all models implemented in $crossValidator$ class. In all our cross-validation experiments we used the $f1_score$ as model performance measurement. Although its not the same measurement we selected for each task, it's still more strict requirement than all other metric we will describe in next sections.
+In order to select the best model candidates, we need to perform 5-fold cross validation using training set only. The cross validation process for all models implemented in $crossValidator$ class. In all our cross-validation experiments we used the $f1_score$ as model performance measurement. While its not the same measurement we selected for each task, it's a stricter requirement than all other metrics we will describe in the following sections.
 
 \subsection{Support vector machine hyper-parameters tuning}
-Based on a post in  \href{https://www.researchgate.net/post/Is_it_necessary_to_choose_kernels_in_SVM_according_to_application}{www.researchgate.net} the most important parameters for SVM are the kernel and the C parameter. Kernel determines the shape of separating hyper-plane and C parameter responsible for its complexity. A larger C makes the model more complex and lowers its bias, hence it have higher chance of over-fitting. A low C gives a model with low variance and high bias. As we could not achieve convergence with linear kernel, we will use SVM with RBF kernel. To select the right value for C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and got a plot. Then we repeated the process with smaller range and smaller steps for fine tuning. As we can see from the plots, the best accuracy achieved with C = 20 after which we can't see any improvement, thus this value with be selected for SVM model.
+Based on a post in \href{https://www.researchgate.net/post/Is_it_necessary_to_choose_kernels_in_SVM_according_to_application}{www.researchgate.net} the most important parameters for SVM are the kernel and the C parameter. Kernel determines the shape of separating hyper-plane and C parameter responsible for its complexity. A larger C makes the model more complex and lowers its bias, hence increasing chance of over-fitting. A low C gives a model with low variance and high bias. As we could not achieve convergence with linear kernel, we will use SVM with RBF kernel. To select the right value for the C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and plotted it. Then we repeated the process with a smaller range and smaller steps for fine tuning. As we can see from the plots, the best accuracy was achieved with $C=20$ after which we can't see any improvement, thus this value with be selected for SVM model.
 
 \begin{figure}[h]
 \centering
@@ -208,7 +200,7 @@ Based on a post in  \href{https://www.researchgate.net/post/Is_it_necessary_to_c
 
 
 \subsection{K nearest neighbours}
-While using KNN, under some circumstances, it is better to weight the neighbors such that nearer neighbors contribute more to the fit i.e. proportional to the inverse of the distance from the query point. As we would like to experiment with both options, we will create two KNN classifiers with two different distance functions and test their performance. To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models. We ended up with k = 3 after which the accuracy starts to decease. As we clearly can see from the plot, the KNN with distance weights performed better with all values of k.
+While using KNN, under some circumstances, it is better to weight the neighbors proportionally to the inverse of the distance from the query point. As we would like to experiment with both options, we will create two KNN classifiers with two different distance functions and test their performance. To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models. The optimal accuracy is $k=3$. Clearly, the KNN with weighted distances performed better for all values of k.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.4\textwidth]{Cross_valid_plots/k_hyper_fig}
@@ -216,11 +208,11 @@ While using KNN, under some circumstances, it is better to weight the neighbors 
 \end{figure}
 
 \subsection{Random Forest}
-A random forest fits a number of decision tree classifiers on various sub-samples of the dataset and uses averaging to improve the predictive accuracy and control over-fitting. According to \href{https://medium.com/all-things-ai/in-depth-parameter-tuning-for-random-forest-d67bb7e920d}{medium.com post} the most important parameters of this classifier are:
+A random forest fits a number of decision tree classifiers on various sub-samples of the dataset and uses averaging to improve the predictive accuracy and reduce over-fitting. According to \href{https://medium.com/all-things-ai/in-depth-parameter-tuning-for-random-forest-d67bb7e920d}{medium.com post} the most important parameters of this classifier are:
 \begin{enumerate}
-	\item Number of trees - Higher the number of trees are better, but adding a lot of trees can slow down the training process. Based on the plots, 50 trees are enough as bigger values doesn't improve the score.
-	\item Maximum depth - represents the depth of each tree in the forest. The downside of a deeper tree, that it tends to overfit. Based on the plots we decided to set the depth to 8 as bigger values does not increase accuracy.
-	\item Minimum samples split - represents the minimum number of samples required to split an internal node. As we can see on the plot, the best accuracy was achieved with the smallest value of 0.01 which means minimum 70 samples for a split.
+	\item \textbf{Number of trees -} The higher the number of trees the better, but adding a lot of trees can slow down the training process. Based on the plots, 50 trees suffice as greater values don't improve the score.
+	\item \textbf{Maximum depth -} Represents the depth of each tree in the forest. A deeper tree tends to overfit more. Based on the plots we decided to set the depth to 8 as bigger depths do not increase accuracy.
+	\item \textbf{Minimum samples split -} represents the minimum number of samples required to split an internal tree node. As we can see on the plot, the best accuracy was achieved with the smallest value of 0.01 which means minimum 70 samples is required for a split.
 \end{enumerate}
 
 \begin{figure}[h]
@@ -247,19 +239,18 @@ A random forest fits a number of decision tree classifiers on various sub-sample
 \label{fig:test}
 \end{figure}
 
-We find other parameters less important (and less intuitive), thus we will use the default values.
+We have found other parameters less important (and less intuitive), thus for them we will use the default values.
 
-\newpage
 \subsection{Multi-layer perceptron}
-Multi-layer Perceptron classifier. This model optimizes the log-loss function using LBFGS or stochastic gradient descent. In this section we discuss the most important parameters of MLP and the values we have chosen. Our decisions mostly based on the post in \href{https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw}{stats.stackexchange.com}.
+Multi-layer Perceptron classifier. This model optimizes the log-loss function using LBFGS or stochastic gradient descent. In this section we discuss the most important parameters of MLP and the values we have chosen. Our decisions were mostly based on the post in \href{https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw}{stats.stackexchange.com}.
 \begin{enumerate}
-	\item Number of hidden layers - There is a consensus that one hidden layer is sufficient for the large majority of problems. Based on this statement we decided to test three options in the cross-validation process: 1, 2 and 3 hidden layers.
-	\item Hidden layer size - There is rule of thumb that helps for supervised learning problems. The upper bound on the number of hidden neurons that will not result in over-fitting is:
+	\item \textbf{Number of hidden layers -} There is a consensus that one hidden layer is sufficient for the large majority of problems. We decided to test three options in the cross-validation process: 1, 2 and 3 hidden layers.
+	\item \textbf{Hidden layer size -} There is rule of thumb for supervised learning problems. The upper bound on the number of hidden neurons that will not result in over-fitting is:
 \begin{gather*}
 N_h = \dfrac{N_s}{\alpha * (N_i + N_o)}
 \end{gather*}
-while $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ causing upper bound of 166 neurons in hidden layer. Thus, during cross validation we will test numbers in this range.
-	\item Activation function - we will test two options: ReLU and Tanh.
+when $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is an arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ the upper bound is 166 neurons in the hidden layer. Thus, during cross validation we will test numbers up to this threshold.
+	\item \textbf{Activation function -} we will test two options: ReLU and Tanh.
 \end{enumerate}
 
 \begin{figure}[h]
