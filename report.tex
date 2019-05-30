@@ -178,7 +178,7 @@ In this section we discuss the candidate models which were selected for our expe
 In order to select the best model candidates, we need to perform 5-fold cross validation using training set only. The cross validation process for all models implemented in $crossValidator$ class. In all our cross-validation experiments we used the $f1_score$ as model performance measurement. While its not the same measurement we selected for each task, it's a stricter requirement than all other metrics we will describe in the following sections.
 
 \subsection{Support vector machine hyper-parameters tuning}
-Based on a post in \href{https://www.researchgate.net/post/Is_it_necessary_to_choose_kernels_in_SVM_according_to_application}{www.researchgate.net} the most important parameters for SVM are the kernel and the C parameter. Kernel determines the shape of separating hyper-plane and C parameter responsible for its complexity. A larger C makes the model more complex and lowers its bias, hence increasing chance of over-fitting. A low C gives a model with low variance and high bias. As we could not achieve convergence with linear kernel, we will use SVM with RBF kernel. To select the right value for the C hyper parameter we used the k-fold cross validation technique. First we performed cross-validation of a big range of C values with exponential steps and plotted it. Then we repeated the process with a smaller range and smaller steps for fine tuning. As we can see from the plots, the best accuracy was achieved with $C=20$ after which we can't see any improvement, thus this value with be selected for SVM model.
+The most important parameters for SVM are the kernel and the C parameter. Kernel determines the shape of separating hyper-plane and C parameter responsible for its complexity. A larger C makes the model more complex, lowers its bias and increase over-fitting. A low C gives a model with low variance and high bias. As we could not achieve convergence with linear kernel, we used RBF. We performed coarse and fine tuning of C parameter by cross-validation. As we can see from the plots, the best accuracy was achieved with $C=20$ after which we can't see any improvement.
 
 \begin{figure}[h]
 \centering
@@ -198,7 +198,7 @@ Based on a post in \href{https://www.researchgate.net/post/Is_it_necessary_to_ch
 \label{fig:test}
 \end{figure}
 
-
+\newpage
 \subsection{K nearest neighbours}
 While using KNN, under some circumstances, it is better to weight the neighbors proportionally to the inverse of the distance from the query point. As we would like to experiment with both options, we will create two KNN classifiers with two different distance functions and test their performance. To select the right value for k hyper parameter we used the k-fold cross validation technique for both knn models. The optimal accuracy is $k=3$. Clearly, the KNN with weighted distances performed better for all values of k.
 \begin{figure}[h]
@@ -244,13 +244,13 @@ We have found other parameters less important (and less intuitive), thus for the
 \subsection{Multi-layer perceptron}
 Multi-layer Perceptron classifier. This model optimizes the log-loss function using LBFGS or stochastic gradient descent. In this section we discuss the most important parameters of MLP and the values we have chosen. Our decisions were mostly based on the post in \href{https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw}{stats.stackexchange.com}.
 \begin{enumerate}
-	\item \textbf{Number of hidden layers -} There is a consensus that one hidden layer is sufficient for the large majority of problems. We decided to test three options in the cross-validation process: 1, 2 and 3 hidden layers.
-	\item \textbf{Hidden layer size -} There is rule of thumb for supervised learning problems. The upper bound on the number of hidden neurons that will not result in over-fitting is:
+	\item \textbf{Number of hidden layers -} We decided to test three options in the cross-validation process: 1, 2 and 3 hidden layers, while 3 hidden layers performed best.
+	\item \textbf{Hidden layer size -} There is rule of thumb for upper bound on the number of hidden neurons that will not result in over-fitting is:
 \begin{gather*}
 N_h = \dfrac{N_s}{\alpha * (N_i + N_o)}
 \end{gather*}
-when $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is an arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ the upper bound is 166 neurons in the hidden layer. Thus, during cross validation we will test numbers up to this threshold.
-	\item \textbf{Activation function -} we will test two options: ReLU and Tanh.
+when $N_o$ is number of output neurons, $N_i$ is number of input neurons, $N_s$ number of training samples and $\alpha$ is an arbitrary factor between 2 and 10. In our case, for $\alpha = 10$ the upper bound is 166 neurons in the hidden layer. Finally, layers of size 95, performed sufficiently. 
+	\item \textbf{Activation function -} we have tested two options: ReLU and Tanh, while Tanh gave the best results. 
 \end{enumerate}
 
 \begin{figure}[h]
@@ -312,7 +312,7 @@ To visualize the prediction results on validation set we will use histogram of t
 
 
 \subsection{Voters transportation}
-To visualize the prediction results on validation set we will use bar charts. Each color represents a set of one type, and the bar height represents the size of the set. The grey color represents "forgotten" voters, i.e. the voters who are willing to vote for a given party, but have not been provided transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar represents the voters which will vote and actually get transportation. The grey and the red bars' heights effect negatively on the score, while the green bar's height effects it positively. As we can see, Random Forest has a very low performance score, which means according to its probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who don't want to vote for them. On the other hand, MLP was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. For visualization, a person was added to the party's list only if he will vote to this party with a probability higher than $0.5$. Our implementation provides the functionality the set the probability threshold which will maybe change the list of predicted votes ?????????????????????????????????????????????????????????, but not change the model, as it's been selected according to f1 score. 
+To visualize the prediction results on validation set we will use bar charts. Each color represents a set of one type, and the bar height represents the size of the set. The grey color represents "forgotten" voters, i.e. the voters who are willing to vote for a given party, but have not been provided transportation. The red color is a sets of votes who are not voting for the party but still got a free ride. The green bar represents the voters which will vote and actually get transportation. The grey and the red bars' heights effect negatively on the score, while the green bar's height effects it positively. As we can see, Random Forest has a very low performance score, which means according to its probability predictions the parties will not provide transportation to their potential voters or will give a free ride to people who don't want to vote for them. On the other hand, MLP was much more accurate with it's probability predictions and provided each party a relatively large list of true potential voters. For visualization, a person was added to the party's list only if he will vote to this party with a probability higher than $0.5$. Our implementation provides the functionality to set the probability threshold which will maybe change the list of predicted votes, but will not change the best model for this task, as it's been selected according to f1 score. 
 
 \begin{figure}[h]
 \centering
@@ -395,6 +395,7 @@ As we can see, in both cases we achieved the same results as the same model was 
 \item In our case the same model was selected for all three tasks, which is not necessarily always true. If there are different models which are best for different task, we are giving up on performance while selecting only one model for all tasks.
 \end{enumerate}
 
+\newpage
 \section{Feature manipulation - Bonus Assignment}
 In this section we look for features which can be manipulated to cause another party to win. To complete this task we've created a class $featureManipulator$ that automatically finds such features. First, we provide the class the best model for winner party prediction. Them, in iterative manner, Feature Manipulator decreases or increases one column of the validation or test data one by one, by a given constant $C$. In each iteration we start with relatively small values of $C$ and increase them gradually, until the model predicts another party as a winner. To visualize it we plot the histograms of original predictions, new predictions on altered data and true labels.   
 
@@ -419,10 +420,9 @@ To summarize the results:
 \item If \textit{Avg monthly expense on pets or plants} grows by 11.3 the Yellows will win
 
 \item If \textit{Yearly Expenses K} grows by 2.9 the Khakis will win
-
 \end{enumerate}
 
-\newpage
+
 \section{Widrow-Hoff}
 In this section we implement Adaline algorithm. First we implemented iterative Adaline which worked properly but was extremely slow. Thus the best option is an analytic solution which we implemented as well. Then we implemented a 1-vs-all technique in $Adaline$ class for multiclass classification. i.e. for the Iris dataset we trained automatically 3 Adaline binary classifiers, and 10 classifiers for Digits dataset.
 \subsection{Results on Iris and Digits datasets}
